@@ -1,2 +1,0 @@
-# Satarkai
-Personal Portfolio App
