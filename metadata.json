@@ -1,8 +1,0 @@
-{
-  "name": "Satark AI",
-  "description": "A compassionate AI companion providing immediate legal guidance, safety resources, and emotional support for victims of harassment or crime.",
-  "requestFramePermissions": [
-    "geolocation",
-    "microphone"
-  ]
-}
