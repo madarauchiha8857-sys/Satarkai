@@ -1,4 +1,0 @@
-function showAlert() {
-    alert("Thanks for visiting Satarkai! Message sent successfully.");
-}
-
