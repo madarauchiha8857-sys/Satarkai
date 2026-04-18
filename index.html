@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK CAFE</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const coffeeTypes = [
+            { id: 1, name: "ESPRESSO", tagline: "Brewed Awakenings", bgColor: "bg-[#F2E3CA]" },
+            { id: 2, name: "LATTE", tagline: "Creamy Delights", bgColor: "bg-[#EAD7BB]" },
+            { id: 3, name: "CAPPUCCINO", tagline: "Frothy Goodness", bgColor: "bg-[#D9C5B2]" }
+        ];
+
+        function App() {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const currentCoffee = coffeeTypes[currentIndex];
+
+            const handleNext = () => {
+                setCurrentIndex((prev) => (prev + 1) % coffeeTypes.length);
+            };
+
+            return (
+                <div className={`min-h-screen flex flex-col items-center justify-center ${currentCoffee.bgColor} transition-all duration-500`}>
+                    <h1 className="text-4xl font-bold mb-4">NEW</h1>
+                    <h2 className="text-6xl font-black mb-8">{currentCoffee.name}</h2>
+                    
+                    {/* Coffee Image Placeholder */}
+                    <div className="w-64 h-64 bg-black rounded-full mb-8 flex items-center justify-center text-white">
+                        IMAGE HERE
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-xl font-bold">SK CAFE</p>
+                        <p className="text-lg italic">{currentCoffee.tagline}</p>
+                    </div>
+
+                    <button 
+                        onClick={handleNext}
+                        className="mt-10 px-6 py-2 bg-black text-white rounded-full font-bold"
+                    >
+                        NEXT COFFEE
+                    </button>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
