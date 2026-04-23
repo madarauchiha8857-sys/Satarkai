@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SK CAFE - Indonesia Toasted Temptation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;900&display=swap');
+
+        /* Hide scrollbars but keep functionality */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scrollbar-width: none;
+            box-sizing: border-box;
+        }
+        *::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: url('IMG_5059.jpeg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #2b1b17;
+        }
+
+        /* --- SK CAFE Header Logo --- */
+        .header-brand {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .header-brand:hover { transform: scale(1.05); }
+        .logo-circle {
+            width: 42px;
+            height: 42px;
+            background: #2b1b17;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .logo-text {
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: -1px;
+            color: #2b1b17;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        /* --- Apple-Style Bottom Dock --- */
+        .bottom-nav-wrapper {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-dock {
+            background: rgba(255, 252, 242, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50px;
+            padding: 12px 35px;
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .nav-item {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2b1b17;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-item:hover { opacity: 0.6; transform: translateY(-2px); }
+
+        .sound-pill {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 252, 242, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .sound-pill:hover { transform: scale(1.1); }
+
+        /* --- Support & Search Overlays --- */
+        .overlay-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 35px;
+            padding: 35px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .support-btn {
+            width: 100%;
+            text-align: left;
+            padding: 15px 20px;
+            border-radius: 20px;
+            background: #f9f7f5;
+            margin-bottom: 12px;
+            font-weight: 600;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .support-btn:hover { background: #2b1b17; color: white; }
+
+        /* --- Main Immersive Card --- */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 90vh;
+            margin: 40px auto 140px; /* Padding for bottom nav */
+            border-radius: 35px;
+            position: relative;
+            background: rgba(255, 252, 242, 0.95);
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: scale(0.98);
+            transition: all 1s ease;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: clamp(40px, 12vw, 90px);
+            line-height: 0.9;
+            letter-spacing: -4px;
+            margin-bottom: 30px;
+        }
+
+        .video-box {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 50px;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .video-box video { width: 100%; display: block; object-fit: cover; }
+
+        .product-card {
+            max-width: 500px;
+            margin: 0 auto 80px;
+            background: white;
+            padding: 40px;
+            border-radius: 35px;
+            border: 1px solid #f0f0f0;
+        }
+
+        /* --- Cart View Styles --- */
+        .view-hidden { display: none !important; }
+        .cart-page {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 3000;
+            overflow-y: auto;
+            padding: 40px 20px 120px;
+        }
+
+        /* Responsive Fixes */
+        @media (max-width: 768px) {
+            .header-brand { top: 15px; left: 15px; }
+            .nav-dock { padding: 10px 20px; gap: 20px; }
+            .nav-item span { display: none; } /* Show icons only on small mobile if needed */
+            .main-container { margin: 0; border-radius: 0; min-height: 100vh; padding-bottom: 120px; }
+            .hero-title { letter-spacing: -2px; }
+        }
+
+        #loader { position: fixed; inset: 0; z-index: 10000; background: #000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s; }
+    </style>
+</head>
+<body class="flex flex-col items-center">
+
+    <!-- Header Brand Logo -->
+    <div class="header-brand" onclick="navigateTo('home')">
+        <div class="logo-circle">SK</div>
+        <div class="logo-text">SK CAFE</div>
+    </div>
+
+    <!-- Bottom Apple Dock -->
+    <div class="bottom-nav-wrapper">
+        <div class="nav-dock">
+            <div class="nav-item" onclick="openSupport()">
+                <i data-lucide="help-circle" class="w-5 h-5"></i> <span>Support</span>
+            </div>
+            <div class="nav-item" onclick="openSearch()">
+                <i data-lucide="search" class="w-5 h-5"></i> <span>Search</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('cart')">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i> 
+                <span>Bag</span> <span id="dock-cart-count" class="ml-1 bg-black text-white text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+            </div>
+        </div>
+        <div class="sound-pill" onclick="toggleMusic()">
+            <span id="music-icon" class="text-xl">🔇</span>
+        </div>
+    </div>
+
+    <!-- Support Modal -->
+    <div id="support-modal" class="overlay-modal">
+        <div class="modal-content">
+            <div id="support-list-view">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-2xl font-black">How can we help?</h3>
+                    <button onclick="closeSupport()"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <button class="support-btn" onclick="showHelpDetail('track')">Track Order <i data-lucide="arrow-right"></i></button>
+                <button class="support-btn" onclick="showHelpDetail('delivery')">Delivery Time <i data-lucide="arrow-right"></i></button>
+                <button class="support-btn" onclick="showHelpDetail('purity')">Is it Healthy? <i data-lucide="arrow-right"></i></button>
+                <button class="support-btn" onclick="showHelpDetail('agent')">Talk to Agent <i data-lucide="arrow-right"></i></button>
+            </div>
+            <div id="support-detail-view" style="display: none;">
+                <button onclick="resetSupport()" class="text-xs font-bold text-blue-500 mb-4 flex items-center gap-2 uppercase"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
+                <h4 id="help-title" class="text-xl font-black mb-4 uppercase tracking-tighter"></h4>
+                <p id="help-text" class="text-sm leading-relaxed opacity-60 mb-8"></p>
+                <button onclick="closeSupport()" class="w-full bg-black text-white py-4 rounded-2xl font-bold uppercase text-xs">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Audio -->
+    <audio id="myAudio" loop><source src="Music.mp3" type="audio/mpeg"></audio>
+
+    <!-- Ad Overlay -->
+    <div id="ad-container" style="display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.95); flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <p class="mb-4 font-bold tracking-widest text-xs uppercase">ADVERTISEMENT: <span id="ad-timer">10</span>S</p>
+        <div class="relative w-[85%] max-w-[350px] border-[4px] border-blue-500 rounded-2xl overflow-hidden shadow-2xl">
+            <img src="Ads.jpg" alt="Ad" class="w-full h-auto block">
+        </div>
+        <button id="skip-ad-btn" disabled class="mt-10 px-10 py-4 bg-gray-800 text-gray-500 font-bold rounded-full">Skip Ad in 5s</button>
+    </div>
+
+    <!-- Video Loader -->
+    <div id="loader"><video autoplay muted playsinline id="loader-video"><source src="Opening .MP4" type="video/mp4"></video></div>
+
+    <!-- Main Container Card -->
+    <div id="app-container" class="main-container">
+        
+        <!-- --- HOME VIEW --- -->
+        <div id="home-view" class="page-view flex flex-col p-5 md:p-10">
+            <section class="text-center py-10 mt-10">
+                <h1 class="hero-title">INDONESIA<br>TOASTED<br>TEMPTATION</h1>
+                <p class="opacity-60 max-w-2xl mx-auto mb-10 font-medium">Flagship organic roasted coffee powder. Experience 100% natural, chemical-free purity in every sip.</p>
+                <a href="#featured" class="bg-black text-white px-10 py-4 rounded-full font-bold inline-flex items-center gap-4 shadow-xl uppercase text-xs tracking-widest">Explore Details <i data-lucide="chevron-down" class="w-4 h-4"></i></a>
+            </section>
+
+            <!-- Video Intro -->
+            <div class="video-box" id="featured">
+                <video autoplay loop muted playsinline><source src="Untitled.mov" type="video/quicktime"><source src="Untitled.mov" type="video/mp4"></video>
+            </div>
+
+            <!-- Product Details -->
+            <div class="product-card">
+                <h3 class="text-[10px] font-black uppercase tracking-[5px] opacity-30 mb-2">Premium Blend</h3>
+                <h2 class="text-2xl font-black mb-6">Indonesia Toasted Temptation</h2>
+                <div class="flex items-end gap-3 mb-8">
+                    <span class="text-4xl font-black">₹ 249</span>
+                    <span class="text-sm opacity-30 line-through mb-1">₹ 299</span>
+                    <span class="text-xs text-green-600 font-bold mb-1 uppercase">Save ₹50 today</span>
+                </div>
+                
+                <div class="flex gap-4 mb-10">
+                    <div class="flex items-center bg-gray-50 rounded-2xl border px-2">
+                        <button onclick="adjustQty(-1)" class="p-4"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                        <input type="number" id="qty-box" value="1" min="1" class="w-10 text-center font-black bg-transparent outline-none">
+                        <button onclick="adjustQty(1)" class="p-4"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                    </div>
+                    <button onclick="addToBag()" class="flex-1 bg-blue-600 text-white font-black uppercase tracking-widest text-xs rounded-full shadow-lg hover:bg-blue-700 transition-all">Add to Bag</button>
+                </div>
+
+                <div class="space-y-4 border-t pt-8">
+                    <details class="group">
+                        <summary class="flex justify-between items-center font-bold text-xs uppercase cursor-pointer">Ingredients <span>+</span></summary>
+                        <p class="text-sm opacity-60 pt-3">100% Organic Roasted Arabica Beans. No additives or preservatives.</p>
+                    </details>
+                    <details class="group">
+                        <summary class="flex justify-between items-center font-bold text-xs uppercase cursor-pointer">Shipping <span>+</span></summary>
+                        <p class="text-sm opacity-60 pt-3">Standard delivery in 3-5 days. Express metro delivery in 48 hours.</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Review -->
+            <section class="py-20 px-10 text-center bg-white/40 rounded-[40px] mb-20 border border-black/5">
+                <p class="italic text-2xl opacity-80 max-w-2xl mx-auto mb-6 leading-relaxed">"The aroma of this coffee is truly addictive. It feels so clean and light on the stomach. Truly natural."</p>
+                <div class="font-black uppercase text-xs tracking-widest">— Anjali Sharma</div>
+            </section>
+
+            <!-- Subscribe Section -->
+            <section class="bg-gray-100 rounded-[40px] p-10 md:p-20 text-center mb-20">
+                <h2 class="text-4xl font-black uppercase tracking-tighter mb-4">Stay Connected</h2>
+                <p class="opacity-50 text-sm mb-10">Subscribe to our newsletter for exclusive organic living tips.</p>
+                <div class="flex flex-col md:row items-center gap-4 max-w-md mx-auto">
+                    <input type="email" placeholder="Email Address" class="w-full p-5 rounded-full border bg-white font-semibold outline-none">
+                    <button class="w-full bg-blue-500 text-white py-5 rounded-full font-black uppercase tracking-widest shadow-xl">Join Now</button>
+                </div>
+            </section>
+
+            <!-- Footer (Dark) -->
+            <footer class="bg-[#0a0e14] rounded-[40px] p-10 md:p-20 text-center text-gray-500">
+                <h2 class="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter mb-10">Quality Sourced<br>Globally.</h2>
+                <button onclick="openSupport()" class="bg-blue-600 text-white px-10 py-5 rounded-full font-black uppercase tracking-widest shadow-2xl mb-20">Contact Us Today ↗</button>
+                <div class="h-[1px] bg-white/10 w-full mb-10"></div>
+                <div class="text-3xl font-black text-white tracking-widest mb-4">SKCAFE</div>
+                <p class="text-[10px] tracking-[5px] uppercase opacity-40">© SK CAFE Organic Ltd 2026</p>
+            </footer>
+        </div>
+
+        <!-- --- CART VIEW --- -->
+        <div id="cart-view" class="cart-page view-hidden">
+            <div class="max-w-4xl mx-auto w-full">
+                <div class="flex items-center justify-between mb-12">
+                    <h2 class="text-5xl font-black tracking-tighter">Your Bag</h2>
+                    <!-- Functional Back Button -->
+                    <button onclick="navigateTo('home')" class="px-6 py-3 bg-gray-100 rounded-full text-xs font-black uppercase flex items-center gap-2 hover:bg-black hover:text-white transition-all"><i data-lucide="arrow-left" class="w-4 h-4"></i> Continue Shopping</button>
+                </div>
+
+                <div id="cart-items-container" class="mb-10"></div>
+
+                <div class="bg-[#f9f7f5] p-10 rounded-[40px] border-2 border-dashed border-black/10">
+                    <h4 class="text-xs font-black uppercase tracking-widest opacity-40 mb-6">Delivery Information</h4>
+                    <input type="text" id="cust-name" placeholder="Full Legal Name" class="w-full mb-4 p-5 rounded-2xl border-none bg-white font-bold shadow-sm outline-none">
+                    <input type="tel" id="cust-phone" placeholder="Mobile Number" class="w-full mb-4 p-5 rounded-2xl border-none bg-white font-bold shadow-sm outline-none">
+                    <textarea id="cust-address" placeholder="Complete Shipping Address" class="w-full mb-8 p-5 rounded-2xl border-none bg-white font-bold shadow-sm outline-none" rows="3"></textarea>
+                    
+                    <div class="flex justify-between items-center mb-8 pt-8 border-t">
+                        <span class="font-bold opacity-40 uppercase text-xs">Total Amount</span>
+                        <span id="cart-total" class="font-black text-4xl">₹0</span>
+                    </div>
+                    
+                    <button onclick="placeOrder()" class="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-sm shadow-2xl tracking-widest">Confirm Order (COD)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thank You Overlay -->
+    <div id="thankyou-overlay" style="display: none; position: fixed; inset: 0; background: #fff; z-index: 10000; justify-content: center; align-items: center;">
+        <video id="thankyou-video" width="100%" height="100%" style="object-fit: cover;" playsinline><source src="Order.MP4" type="video/mp4"></video>
+    </div>
+
+    <script>
+        let cartItems = [];
+        let isChanging = false;
+        lucide.createIcons();
+
+        // Support Info Data
+        const helpData = {
+            track: { title: "Order Tracking", text: "Once your order is shipped, a tracking ID will be sent via SMS. You can also use your mobile number on our delivery partner's portal to see live status." },
+            delivery: { title: "Shipping Policy", text: "Standard shipping takes 3-5 business days across India. Metro cities enjoy 48-hour express delivery. Shipping is free on orders above ₹499." },
+            purity: { title: "Quality & Health", text: "Our Indonesia Toasted Temptation is 100% natural roasted coffee. No chemical coloring, no fillers, and no artificial preservatives. Purely organic." },
+            agent: { title: "Live Agent", text: "Connecting to a live WhatsApp support agent... Please ensure your internet is active. You will be redirected in 5 seconds." }
+        };
+
+        function openSupport() { document.getElementById('support-modal').style.display = 'flex'; }
+        function closeSupport() { document.getElementById('support-modal').style.display = 'none'; resetSupport(); }
+        function showHelpDetail(key) {
+            const data = helpData[key];
+            document.getElementById('support-list-view').style.display = 'none';
+            const detailView = document.getElementById('support-detail-view');
+            detailView.style.display = 'block';
+            document.getElementById('help-title').innerText = data.title;
+            document.getElementById('help-text').innerText = data.text;
+            lucide.createIcons();
+        }
+        function resetSupport() { document.getElementById('support-list-view').style.display = 'block'; document.getElementById('support-detail-view').style.display = 'none'; }
+        
+        function openSearch() { const q = prompt("What are you looking for?"); if(q) alert(`Searching for "${q}"...`); }
+        function adjustQty(v) { const inp = document.getElementById('qty-box'); let val = parseInt(inp.value) + v; if(val >= 1) inp.value = val; }
+
+        window.onload = () => {
+            const video = document.getElementById('loader-video');
+            video.onended = hideLoader;
+            setTimeout(hideLoader, 6000);
+            setInterval(triggerAd, 180000); 
+        };
+
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            if(!loader || loader.style.display === 'none') return;
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                const app = document.getElementById('app-container');
+                app.style.opacity = '1';
+                app.style.transform = 'scale(1)';
+            }, 800);
+        }
+
+        function triggerAd() {
+            const container = document.getElementById('ad-container');
+            container.style.display = 'flex';
+            let tl = 10, sl = 5;
+            const timer = setInterval(() => {
+                tl--; sl--;
+                if(tl >= 0) document.getElementById('ad-timer').innerText = tl;
+                const btn = document.getElementById('skip-ad-btn');
+                if(sl > 0) btn.innerText = `Skip Ad in ${sl}s`;
+                else { btn.innerText = "Skip Ad ➔"; btn.disabled = false; btn.style.background = "white"; btn.style.color = "black"; btn.style.cursor = "pointer"; }
+                if(tl <= 0) clearInterval(timer);
+            }, 1000);
+        }
+        document.getElementById('skip-ad-btn').onclick = () => { document.getElementById('ad-container').style.display = 'none'; };
+
+        function toggleMusic() {
+            const audio = document.getElementById('myAudio'), icon = document.getElementById('music-icon');
+            if (audio.paused) { audio.play().catch(() => {}); icon.innerText = "🔊"; } else { audio.pause(); icon.innerText = "🔇"; }
+        }
+
+        function navigateTo(page) {
+            if(isChanging) return; isChanging = true;
+            const home = document.getElementById('home-view'), cart = document.getElementById('cart-view');
+            if(page === 'cart') { home.classList.add('view-hidden'); cart.classList.remove('view-hidden'); updateCartUI(); } 
+            else { cart.classList.add('view-hidden'); home.classList.remove('view-hidden'); }
+            isChanging = false;
+        }
+
+        function addToBag() {
+            const qty = parseInt(document.getElementById('qty-box').value) || 1;
+            for(let i=0; i<qty; i++) cartItems.push({ name: "Indonesia Toasted Temptation", price: 249 });
+            document.getElementById('dock-cart-count').textContent = cartItems.length;
+            navigateTo('cart');
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            document.getElementById('cart-total').textContent = '₹' + cartItems.reduce((a, b) => a + b.price, 0);
+            if(cartItems.length === 0) { container.innerHTML = `<p class="text-center py-20 font-black opacity-20 uppercase tracking-widest">Your bag is empty</p>`; return; }
+            container.innerHTML = cartItems.map((item, i) => `
+                <div class="flex justify-between items-center bg-white p-6 rounded-2xl mb-4 border shadow-sm">
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center"><i data-lucide="coffee" class="w-6 h-6"></i></div><p class="font-bold">${item.name}</p></div>
+                    <div class="flex items-center gap-6"><span class="font-black">₹${item.price}</span><button onclick="removeFromCart(${i})" class="text-red-400"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        function removeFromCart(i) {
+            cartItems.splice(i, 1);
+            document.getElementById('dock-cart-count').textContent = cartItems.length;
+            updateCartUI();
+        }
+
+        function placeOrder() {
+            const n = document.getElementById('cust-name').value, p = document.getElementById('cust-phone').value;
+            if(!n || p.length < 10) { alert("Please enter valid details."); return; }
+            const overlay = document.getElementById('thankyou-overlay'), video = document.getElementById('thankyou-video');
+            overlay.style.display = 'flex'; video.currentTime = 0; video.play();
+            video.onended = () => {
+                overlay.style.display = 'none';
+                cartItems = []; document.getElementById('dock-cart-count').textContent = "0";
+                navigateTo('home');
+            };
+        }
+    </script>
+</body>
+</html>
+
