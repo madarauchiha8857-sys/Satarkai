@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAZEEN | Date Seed Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-base: #FDFBF7; 
+            --brand-brown: #6f4e37;
+            --brand-brown-dark: #4a3425;
+            --fluid-bezier: cubic-bezier(0.32, 0.72, 0, 1);
+            --success-green: #388e3c;
+            --fk-gray: #878787;
+            --fk-bg: #f1f3f6;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: #1a1a1a;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Header --- */
+        .site-header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 6%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 5000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .header-logo {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            letter-spacing: -1.5px;
+            text-transform: uppercase;
+            color: #000;
+        }
+
+        .support-logo {
+            width: 38px; height: 38px;
+            background: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #eee; color: var(--brand-brown);
+        }
+
+        /* --- Hero Section --- */
+        .dazeen-hero { position: relative; min-height: 100vh; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-top: 80px; }
+        .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.12; }
+        .dazeen-title { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(2.5rem, 12vw, 6rem); line-height: 0.85; text-transform: uppercase; margin-bottom: 20px; }
+        .explore-btn { background: #000; color: white; padding: 18px 45px; border-radius: 100px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; margin-bottom: 40px; display: inline-block; cursor: pointer; }
+
+        .human-promise { padding: 0 24px; max-width: 550px; text-align: center; margin-bottom: 40px; }
+        .promise-heading { font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--brand-brown); letter-spacing: 3px; margin-bottom: 15px; }
+        .promise-text { font-size: 14px; color: #555; line-height: 1.7; font-weight: 500; }
+
+        /* --- Product Card --- */
+        .product-card {
+            max-width: 500px; margin: 0 auto 100px; background: #fff; border-radius: 40px; padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.04); cursor: pointer; border: 1px solid #f0f0f0;
+        }
+        .image-container { width: 100%; aspect-ratio: 1/1; background: #fcfcfc; border-radius: 25px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; overflow: hidden; }
+        .product-img { width: 85%; height: auto; object-fit: contain; }
+
+        /* --- Full Page Overlays --- */
+        .full-page-overlay {
+            position: fixed; inset: 0; background: white; z-index: 6000;
+            transform: translate3d(0, 100%, 0); transition: transform 0.5s var(--fluid-bezier);
+            overflow-y: auto; visibility: hidden;
+        }
+        .full-page-overlay.active { transform: translate3d(0, 0, 0); visibility: visible; }
+
+        /* Stuck Bar (Fixed at bottom) */
+        .stuck-action-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: 75px; background: white; border-top: 1px solid #eee;
+            display: flex; z-index: 8000; box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+        .action-btn-half { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 900; text-transform: uppercase; font-size: 14px; cursor: pointer; }
+
+        /* Home Basket Strip */
+        #home-basket-strip {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #fff; border-top: 2px solid #eee;
+            padding: 15px 24px; display: none; align-items: center; justify-content: space-between;
+            z-index: 4500; box-shadow: 0 -5px 25px rgba(0,0,0,0.06);
+            animation: slideUp 0.4s var(--fluid-bezier);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Pincode Section */
+        .pincode-box { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin: 20px 0; }
+        .pin-input-wrap { display: flex; gap: 10px; margin-top: 10px; }
+        .pin-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; outline: none; }
+        .pin-btn { background: var(--brand-brown); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 12px; text-transform: uppercase; }
+
+        /* FK Style Cart */
+        .price-details { background: #fff; padding: 20px; margin-top: 10px; border-top: 1px solid #f0f0f0; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .total-row { border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 10px; font-weight: 900; font-size: 18px; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-logo" onclick="location.reload()">DAZEEN</div>
+        <div class="header-actions">
+            <a href="https://wa.me/919834500977" class="support-wrapper" target="_blank">
+                <div class="support-logo"><i data-lucide="headphones" class="w-5 h-5"></i></div>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="dazeen-hero">
+            <video autoplay muted loop playsinline class="hero-bg-video"><source src="Background.mp4" type="video/mp4"></video>
+            <div class="hero-overlay px-6 flex flex-col items-center">
+                <h1 class="dazeen-title">DAZEEN<br>EXPERIENCE</h1>
+                <button class="explore-btn" onclick="scrollToProduct()">EXPLORE BLEND</button>
+
+                <div class="human-promise">
+                    <p class="promise-heading">Our Craft</p>
+                    <p class="promise-text">
+                        "Handcrafted by three friends in the heart of Daund, Pune. We sun-dry and hand-roast each seed to perfection. No industrial shortcuts, just pure natural ritual."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product View (Single Card) -->
+        <section id="product-view" class="py-20 px-6 text-center">
+            <div class="product-card" onclick="openDetailPage()">
+                <div class="image-container">
+                    <img src="Coffe3.PNG" alt="Dazeen Pack" class="product-img">
+                </div>
+                <div class="text-left px-2">
+                    <p class="text-[10px] font-black uppercase text-gray-300 tracking-[4px] mb-2">Pune • Daund Roastery</p>
+                    <h2 class="text-3xl font-black text-brand-brown mb-6">DATE SEED ROAST</h2>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black">₹799</span>
+                            <span class="text-sm text-gray-300 line-through">₹999</span>
+                        </div>
+                        <button class="border-2 border-black px-6 py-2.5 rounded-xl font-black text-[11px] uppercase">Details</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Details -->
+        <footer class="py-20 border-t border-gray-100 bg-white text-center px-10">
+            <div class="max-w-2xl mx-auto mb-10">
+                <h4 class="font-black text-2xl uppercase mb-4 tracking-tighter">Hand-Roasted in Daund</h4>
+                <p class="text-sm text-gray-400 leading-relaxed">Our roastery is located in Pune, where we clean, dry, and roast date seeds using traditional methods. Every pack of DAZEEN carries the signature earthy aroma of our local craftsmanship.</p>
+            </div>
+            <p class="text-[10px] font-black uppercase text-gray-300 tracking-[0.6em]">EST 2026 DAZEEN DATES SEED • PUNE, INDIA</p>
+        </footer>
+    </main>
+
+    <!-- Home Basket Strip (Flipkart Style) -->
+    <div id="home-basket-strip" onclick="openCart()">
+        <div class="flex flex-col">
+            <span id="strip-qty-label" class="text-[10px] font-bold text-fk-gray">1 ITEM IN BASKET</span>
+            <span id="strip-price-label" class="font-black text-lg">₹799</span>
+        </div>
+        <button class="bg-brand-brown text-white px-8 py-2.5 rounded-lg font-black text-xs uppercase shadow-lg">View Basket</button>
+    </div>
+
+    <!-- Product Detail Overlay -->
+    <div id="detail-page" class="full-page-overlay no-scrollbar">
+        <div class="sticky top-0 bg-white/95 backdrop-blur-md p-4 flex justify-between items-center z-50 border-b">
+            <button onclick="closeDetailPage()" class="p-2"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <div class="header-logo text-xl">DAZEEN</div>
+            <div class="flex gap-4"><i data-lucide="share-2" class="w-5 h-5 text-gray-400"></i><i data-lucide="heart" class="w-5 h-5 text-gray-400"></i></div>
+        </div>
+
+        <!-- Product Image -->
+        <div class="flex justify-center p-10 bg-white border-b">
+            <img src="Coffe3.PNG" alt="Dazeen Roast" class="w-full max-w-sm object-contain">
+        </div>
+
+        <div class="p-6 bg-white pb-32">
+            <p class="text-xs font-bold text-brand-brown uppercase mb-2">Artisanal Pune Roast</p>
+            <h1 class="text-xl font-normal text-gray-800 mb-2 leading-snug">Premium Roasted Date Seed Blend - 100% Caffeine Free (250g)</h1>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-green-700 text-white text-[11px] font-black px-2 py-0.5 rounded flex items-center gap-1">4.9 <i class="fas fa-star text-[7px]"></i></div>
+                <span class="text-gray-400 text-sm font-bold">Verified Roastery Selection</span>
+            </div>
+
+            <div class="flex items-baseline gap-3 mb-6">
+                <span class="text-3xl font-black">₹799</span>
+                <span class="text-gray-400 line-through text-lg">₹999</span>
+                <span class="text-green-700 font-bold text-lg">20% off</span>
+            </div>
+
+            <!-- Pincode Checker Feature -->
+            <div class="pincode-box">
+                <p class="text-xs font-bold text-gray-600 flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-brand-brown"></i> Check Delivery
+                </p>
+                <div class="pin-input-wrap">
+                    <input type="number" id="check-pin" placeholder="Enter Pincode" class="pin-input">
+                    <button id="pin-check-btn" onclick="checkPincode()" class="pin-btn">Check</button>
+                </div>
+                <div id="pin-status" class="mt-3 text-[11px] font-bold text-gray-400 italic"></div>
+            </div>
+
+            <h4 class="text-xs font-black uppercase text-gray-400 tracking-widest mb-4">Quantity</h4>
+            <div class="flex items-center gap-8 mb-12">
+                <div class="flex items-center gap-6">
+                    <button onclick="updateActiveQty(-1)" class="w-12 h-12 border rounded-full font-black text-xl">-</button>
+                    <span id="active-qty-val" class="font-black text-2xl">1</span>
+                    <button onclick="updateActiveQty(1)" class="w-12 h-12 border rounded-full font-black text-xl">+</button>
+                </div>
+                <button onclick="addFromDetail()" class="bg-brand-brown text-white px-8 py-3.5 rounded-xl font-black text-xs uppercase shadow-lg">Add to Basket</button>
+            </div>
+
+            <!-- Description -->
+            <div class="border-t border-gray-50 pt-8 mb-10">
+                <h4 class="text-xs font-black uppercase text-gray-400 tracking-widest mb-4">Description</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Sourced directly from local Pune farms. Our date seeds are meticulously cleaned, sun-dried, and roasted by hand in Daund. Experience a rich, dark flavor with zero acidity and zero caffeine.
+                </p>
+            </div>
+
+            <!-- Reviews -->
+            <div class="border-t pt-8">
+                <h3 class="font-black text-lg mb-6">Customer Reviews</h3>
+                <div class="border-b pb-5 mb-5">
+                    <div class="flex items-center gap-2 mb-2"><div class="bg-green-700 text-white text-[9px] font-black px-2 py-0.5 rounded">5 ★</div><span class="font-bold text-sm">Better than Coffee</span></div>
+                    <p class="text-gray-500 text-xs italic">"Amazing taste and no more acidity issues. Love that it's local."</p>
+                </div>
+                <div class="pb-5 mb-5">
+                    <div class="flex items-center gap-2 mb-2"><div class="bg-green-700 text-white text-[9px] font-black px-2 py-0.5 rounded">5 ★</div><span class="font-bold text-sm">Great Aroma</span></div>
+                    <p class="text-gray-500 text-xs italic">"The smell of roasted seeds is so fresh. Premium packaging too."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basket Page (Flipkart UI) -->
+    <div id="cart-sheet" class="full-page-overlay no-scrollbar" style="background: #f1f3f6;">
+        <div class="sticky top-0 bg-white p-4 flex items-center gap-4 z-50 border-b">
+            <button onclick="closeAll()"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-xl font-bold">My Basket</h2>
+        </div>
+
+        <div id="basket-items-list">
+            <!-- Items populate here -->
+        </div>
+
+        <div class="price-details">
+            <h3 class="uppercase">Price Details</h3>
+            <div class="price-row"><span>Price (<span id="total-qty-label">1</span> item)</span><span>₹999</span></div>
+            <div class="price-row"><span>Discount</span><span class="text-green-700">- ₹200</span></div>
+            <div class="price-row"><span>Delivery Charges</span><span class="text-green-700">FREE</span></div>
+            <div class="total-row flex justify-between">
+                <span>Total Amount</span>
+                <span id="basket-total-amt">₹799</span>
+            </div>
+        </div>
+
+        <div class="stuck-action-bar">
+            <div class="flex flex-col justify-center px-6 flex-1 bg-white">
+                <span id="footer-total-amt" class="font-black text-2xl">₹799</span>
+                <span class="text-[10px] text-fk-gray font-bold">Free Fast Delivery</span>
+            </div>
+            <button onclick="openCheckout()" class="flex-[0.8] bg-brand-brown text-white font-black text-sm uppercase">Place Order</button>
+        </div>
+    </div>
+
+    <!-- Checkout Overlay -->
+    <div id="checkout-overlay" class="full-page-overlay no-scrollbar" style="background: #f1f3f6; z-index: 9500;">
+        <div class="p-4 bg-white border-b flex items-center gap-4 sticky top-0 z-50">
+            <button onclick="closeCheckout()"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-lg font-bold">Delivery Address</h2>
+        </div>
+        <div class="p-4 max-w-xl mx-auto">
+            <div class="bg-white p-6 rounded-lg mb-3 shadow-sm">
+                <p class="text-[10px] font-bold text-fk-gray uppercase mb-4 tracking-widest">Contact Info</p>
+                <input type="text" id="cust-name" placeholder="Full Name" style="width:100%; padding:16px; border:1px solid #eee; margin-bottom:15px; border-radius:8px; outline:none; font-weight:600;">
+                <input type="tel" id="cust-phone" placeholder="Mobile Number" style="width:100%; padding:16px; border:1px solid #eee; border-radius:8px; outline:none; font-weight:600;">
+            </div>
+            <div class="bg-white p-6 rounded-lg mb-3 shadow-sm">
+                <p class="text-[10px] font-bold text-fk-gray uppercase mb-4 tracking-widest">Address Info</p>
+                <div class="flex gap-4 mb-4">
+                    <input type="number" id="cust-pin" placeholder="Pincode" style="width:100%; padding:16px; border:1px solid #eee; border-radius:8px; outline:none; font-weight:600;">
+                    <input type="text" id="cust-state" placeholder="State" style="width:100%; padding:16px; border:1px solid #eee; border-radius:8px; outline:none; font-weight:600;">
+                </div>
+                <textarea id="cust-address" placeholder="Address (House No, Area, Landmark)" rows="4" style="width:100%; padding:16px; border:1px solid #eee; border-radius:8px; outline:none; font-weight:600;"></textarea>
+            </div>
+            <button onclick="sendOrder()" class="w-full bg-brand-brown text-white p-5 font-black uppercase text-sm mt-6 rounded-lg shadow-xl tracking-widest">SUBMIT & PLACE ORDER</button>
+        </div>
+    </div>
+
+    <script>
+        const product = { title: 'DATE SEED ROAST', price: 799, old: 999, img: 'Coffe3.PNG' };
+        let cartQty = 0;
+        let activeQty = 1;
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            lucide.createIcons(); 
+        });
+
+        // Navigation
+        function scrollToProduct() { document.getElementById('product-view').scrollIntoView({ behavior: 'smooth' }); }
+        function openDetailPage() { document.getElementById('detail-page').classList.add('active'); activeQty = 1; updateActiveQty(0); }
+        function closeDetailPage() { document.getElementById('detail-page').classList.remove('active'); }
+        function openCart() { document.getElementById('cart-sheet').classList.add('active'); renderCart(); }
+        function closeAll() { document.getElementById('cart-sheet').classList.remove('active'); }
+        function openCheckout() { if(cartQty === 0) cartQty = activeQty; document.getElementById('checkout-overlay').classList.add('active'); }
+        function closeCheckout() { document.getElementById('checkout-overlay').classList.remove('active'); }
+
+        // Quantity Logic
+        function updateActiveQty(d) {
+            activeQty = Math.max(1, activeQty + d);
+            document.getElementById('active-qty-val').innerText = activeQty;
+        }
+
+        // Pincode Logic
+        function checkPincode() {
+            const pin = document.getElementById('check-pin').value;
+            const status = document.getElementById('pin-status');
+            const btn = document.getElementById('pin-check-btn');
+            
+            if(pin.length < 6) return alert("Sahi pincode daliye bhai!");
+            
+            btn.innerText = "Checking...";
+            status.innerText = "";
+            
+            setTimeout(() => {
+                btn.innerText = "Check";
+                status.style.color = "#388e3c";
+                status.innerHTML = `<i class="fas fa-check-circle"></i> Free Delivery available for ${pin}`;
+            }, 1200);
+        }
+
+        // Home Basket Strip
+        function renderHomeStrip() {
+            const strip = document.getElementById('home-basket-strip');
+            if(cartQty > 0) {
+                strip.style.display = 'flex';
+                document.getElementById('strip-qty-label').innerText = `${cartQty} ITEM ADDED`;
+                document.getElementById('strip-price-label').innerText = `₹${product.price * cartQty}`;
+            } else {
+                strip.style.display = 'none';
+            }
+        }
+
+        function addFromDetail() {
+            cartQty = activeQty;
+            closeDetailPage();
+            renderHomeStrip();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('basket-items-list');
+            if(cartQty === 0) { 
+                container.innerHTML = `<div class="bg-white py-40 text-center text-gray-300 font-black uppercase">Basket Empty</div>`;
+                document.getElementById('basket-total-amt').innerText = '₹0';
+                document.getElementById('footer-total-amt').innerText = '₹0';
+                return; 
+            }
+            container.innerHTML = `
+                <div class="bg-white p-5 flex gap-4 border-b">
+                    <img src="${product.img}" class="w-20 h-20 object-contain">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-normal text-gray-800">${product.title} (250g)</h4>
+                        <div class="fk-item-price flex gap-3 mt-2">
+                            <span class="font-black text-lg">₹${product.price}</span>
+                            <span class="text-fk-gray text-xs line-through">₹${product.old}</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-4">
+                            <div class="flex border rounded h-8 items-center bg-white shadow-sm">
+                                <button onclick="updateCartFinal(-1)" class="px-3 border-r font-bold">-</button>
+                                <span class="px-5 font-black text-sm">${cartQty}</span>
+                                <button onclick="updateCartFinal(1)" class="px-3 border-l font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const total = product.price * cartQty;
+            document.getElementById('basket-total-amt').innerText = `₹${total}`;
+            document.getElementById('footer-total-amt').innerText = `₹${total}`;
+            document.getElementById('total-qty-label').innerText = cartQty;
+            renderHomeStrip();
+        }
+
+        function updateCartFinal(d) {
+            cartQty = Math.max(0, cartQty + d);
+            renderCart();
+        }
+
+        // Final Order Redirect to WhatsApp
+        function sendOrder() {
+            const n = document.getElementById('cust-name').value, p = document.getElementById('cust-phone').value,
+                  s = document.getElementById('cust-state').value, a = document.getElementById('cust-address').value,
+                  pin = document.getElementById('cust-pin').value;
+            if(!n || !p || !s || !a || !pin) return alert("Sari details bhariye bhai!");
+
+            const orderID = Math.floor(1000 + Math.random() * 9000);
+            const total = product.price * cartQty;
+            const msg = `*DAZEEN ORDER*%0A*ID:* #DZ-${orderID}%0A*Product:* ${product.title}%0A*Qty:* ${cartQty}%0A*Total:* ₹${total}%0A%0A*Name:* ${n}%0A*Number:* ${p}%0A*State:* ${s}%0A*Address:* ${a}%0A*Pincode:* ${pin}`;
+            
+            window.location.href = `https://wa.me/919834500977?text=${encodeURIComponent(msg)}`;
+        }
+
+        function handleImgError(i) { i.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23eee'/%3E%3C/svg%3E"; }
+    </script>
+</body>
+</html>
+
