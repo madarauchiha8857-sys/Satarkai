@@ -1,0 +1,541 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAZEEN | Date Seed Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-base: #FDFBF7; 
+            --island-black: #000000;
+            --brand-brown: #6f4e37;
+            --fluid-bezier: cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- DAZEEN HERO SECTION (As per snippet) --- */
+        .dazeen-hero {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero-bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.08; /* Subtle background vibe */
+        }
+
+        .hero-overlay {
+            z-index: 10;
+            padding: 0 20px;
+            animation: fadeInHero 1.2s var(--fluid-bezier);
+        }
+
+        @keyframes fadeInHero {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dazeen-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: clamp(3rem, 12vw, 6rem);
+            line-height: 0.85;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: #000;
+        }
+
+        .dazeen-subtitle {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 40px;
+        }
+
+        .explore-btn {
+            background: black;
+            color: white;
+            padding: 18px 45px;
+            border-radius: 100px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 11px;
+            transition: 0.4s var(--fluid-bezier);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .explore-btn:active { transform: scale(0.92); }
+
+        /* --- Dynamic Island (Bottom Nav) --- */
+        .island-container {
+            position: fixed;
+            bottom: 30px; 
+            left: 50%;
+            transform: translateX(-50%) translate3d(0,0,0);
+            z-index: 7000;
+            transition: transform 0.6s var(--fluid-bezier);
+            pointer-events: none;
+        }
+
+        #dynamic-island {
+            background: var(--island-black);
+            color: white;
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            min-width: 120px;
+            height: 46px;
+            transition: all 0.6s var(--fluid-bezier);
+            cursor: pointer;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+            pointer-events: auto;
+            will-change: width, height, transform;
+        }
+
+        #dynamic-island.expanded {
+            min-width: 320px;
+            height: 80px;
+            padding: 0 16px;
+        }
+
+        #dynamic-island.tracking-mode {
+            min-width: 350px;
+            height: 165px;
+            padding: 20px;
+            border-radius: 40px;
+        }
+
+        #dynamic-island.cart-notif {
+            background: #2563eb;
+            min-width: 190px;
+            height: 46px;
+        }
+
+        /* --- Detail & Cart Pages --- */
+        .full-page-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 3000;
+            transform: translate3d(0, 100%, 0);
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+        .full-page-overlay.active { transform: translate3d(0, 0, 0); }
+
+        .cart-sheet {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 4000;
+            transform: translate3d(0, 100%, 0);
+            transition: transform 0.8s var(--fluid-bezier);
+            overflow-y: auto;
+        }
+        .cart-sheet.active { transform: translate3d(0, 0, 0); }
+
+        .circle-img-container {
+            width: 280px; height: 280px;
+            border-radius: 50%; background: #fff;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.04);
+            margin: 0 auto; display: flex; align-items: center; justify-content: center;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .island-content-wrapper {
+            transition: opacity 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Tracking UI */
+        .tracking-line {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            position: relative;
+            margin: 20px 10px 0;
+        }
+        .tracking-progress {
+            position: absolute;
+            left: 0; top: 0; height: 100%;
+            width: 33%;
+            background: white;
+            border-radius: 2px;
+        }
+        .tracking-node {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px; height: 28px;
+            background: #000;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .desc-tag {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--brand-brown);
+            margin-bottom: 8px;
+            display: block;
+        }
+    </style>
+</head>
+<body onclick="closeIsland(event)">
+
+    <main>
+        <!-- SNIPPET INTEGRATED: DAZEEN HERO -->
+        <section class="dazeen-hero">
+            <video autoplay muted loop playsinline class="hero-bg-video">
+                <source src="Background.mp4" type="video/mp4">
+            </video>
+
+            <div class="hero-overlay">
+                <h1 class="dazeen-title">DAZEEN<br>EXPERIENCE</h1>
+                <p class="dazeen-subtitle">Premium date seed blends for those<br>who seek the best ritual.</p>
+                <button class="explore-btn" onclick="scrollToProduct()">EXPLORE BLEND</button>
+            </div>
+        </section>
+
+        <!-- Product Showcase -->
+        <section id="product-view" class="min-h-[90vh] flex flex-col items-center justify-center px-6 py-24 text-center">
+            <div class="circle-img-container mb-12 transition-transform duration-1000 hover:scale-105">
+                <img src="Prg.JPG" class="w-2/3 object-contain" onerror="handleImgError(this)">
+            </div>
+            <h2 class="text-2xl font-black uppercase mb-1 text-gray-400 tracking-tighter">MEET THE BLEND:</h2>
+            <h3 class="text-3xl font-black uppercase mb-10" style="color: var(--brand-brown)">DATE SEED ROAST</h3>
+            
+            <div class="flex items-center justify-center gap-8 mb-12">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black">₹799</span>
+                    <span class="text-sm text-red-500 line-through font-bold opacity-30">₹999</span>
+                </div>
+                <button onclick="openDetailPage()" class="border-[1.5px] border-black px-8 py-3.5 rounded-xl font-black text-xs uppercase hover:bg-black hover:text-white transition-all shadow-sm">View Details</button>
+            </div>
+            <div class="flex items-center gap-2 justify-center bg-green-50 text-green-700 px-4 py-1.5 rounded-full">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">100% Health • No Caffeine</span>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-24 px-8 border-t border-gray-100">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 text-center md:text-left">
+                <div class="col-span-1 md:col-span-2">
+                    <h4 class="font-black text-2xl mb-5 uppercase">DAZEEN</h4>
+                    <p class="text-gray-400 font-medium text-sm leading-relaxed max-w-xs mx-auto md:mx-0">Premium date seed roasts crafted for the conscious ritual. No caffeine, pure energy.</p>
+                </div>
+                <div>
+                    <h5 class="font-black text-[10px] uppercase tracking-widest text-gray-400 mb-8">Contact</h5>
+                    <ul class="space-y-4 font-bold text-sm text-gray-700">
+                        <li><a href="mailto:support@dazeen.com" class="hover:text-blue-600 transition-colors">support@dazeen.com</a></li>
+                        <li><a href="tel:+919834500977" class="hover:text-blue-600 transition-colors">+91 98345 00977</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-black text-[10px] uppercase tracking-widest text-gray-400 mb-8">Join the community</h5>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <input type="email" id="join-email" placeholder="Email" class="bg-gray-100 p-3 rounded-xl border-none outline-none text-xs font-bold">
+                        <button onclick="handleJoin()" class="bg-black text-white px-5 rounded-xl"><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-24 text-center text-[10px] font-black uppercase text-gray-300 tracking-[0.5em]">© 2026 DAZEEN ROASTERY</p>
+        </footer>
+    </main>
+
+    <!-- Liquid Dynamic Island (Snippet's Bottom Nav) -->
+    <div class="island-container">
+        <div id="dynamic-island" onclick="handleIslandClick(event)">
+            <div id="island-content" class="island-content-wrapper">
+                <span class="font-black text-[11px] uppercase tracking-tighter w-full text-center">DAZEEN</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Page -->
+    <div id="detail-page" class="full-page-overlay no-scrollbar">
+        <div class="p-8 pb-40 max-w-3xl mx-auto">
+            <div class="flex justify-between items-center mb-12">
+                <button onclick="closeDetailPage()" class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center active:scale-90 transition-transform"><i data-lucide="chevron-down" class="w-6 h-6 text-gray-600"></i></button>
+                <span class="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">Date Seed Experience</span>
+                <div class="w-12"></div>
+            </div>
+            <div class="circle-img-container mb-12" style="width: 240px; height: 240px;">
+                <img src="Prg.JPG" class="w-2/3 object-contain">
+            </div>
+            <h2 class="text-4xl font-black uppercase mb-4 leading-none tracking-tight">DATE SEED<br><span style="color:var(--brand-brown)">PREMIUM ROAST</span></h2>
+            <div class="mt-10 space-y-12">
+                <div>
+                    <span class="desc-tag">The Experience</span>
+                    <p class="text-gray-500 font-medium text-base leading-relaxed">
+                        Imagine a drink that satisfies your coffee cravings without the jitters. Our Date Seed Roast is meticulously crafted from sun-dried seeds, offering a deep, nutty flavor that won't irritate your stomach.
+                    </p>
+                </div>
+                <div class="bg-blue-50 p-8 rounded-[40px] border border-blue-100/50">
+                    <span class="desc-tag text-blue-700">The Dazeen Standard</span>
+                    <h4 class="text-xl font-black uppercase text-blue-800 mb-4 tracking-tighter">Purely Beneficial</h4>
+                    <p class="text-blue-900/60 font-medium text-sm leading-relaxed mb-6">Naturally alkaline and 100% caffeine-free. Packed with minerals for daily well-being.</p>
+                    <ul class="space-y-3 font-bold text-sm text-blue-800">
+                        <li class="flex items-center gap-3"><i data-lucide="check-circle" class="w-4 h-4"></i> No Addictive Caffeine</li>
+                        <li class="flex items-center gap-3"><i data-lucide="check-circle" class="w-4 h-4"></i> Rich in Natural Fiber</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basket View -->
+    <div id="cart-sheet" class="cart-sheet flex flex-col no-scrollbar">
+        <div class="p-10 flex flex-col flex-1">
+            <div class="flex justify-between items-center mb-12">
+                <button onclick="closeAll()" class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center active:scale-90 transition-transform"><i data-lucide="chevron-down" class="w-6 h-6 text-gray-600"></i></button>
+                <h2 class="text-3xl font-black uppercase tracking-tighter">Your Basket</h2>
+                <div class="w-12"></div>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto pr-2 no-scrollbar"></div>
+        </div>
+        <div class="h-32 shrink-0"></div>
+    </div>
+
+    <!-- Checkout Page -->
+    <div id="checkout-overlay" class="fixed inset-0 bg-white z-[6000] hidden flex flex-col p-10 overflow-y-auto no-scrollbar">
+        <div class="max-w-xl mx-auto w-full">
+            <button onclick="closeCheckout()" class="mb-12 w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center active:scale-90 transition-transform"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+            <h3 class="text-5xl font-black mb-12 uppercase leading-none tracking-tighter">Delivery</h3>
+            <div class="space-y-6">
+                <input type="text" id="cust-name" placeholder="Full Name" class="w-full p-6 bg-gray-50 rounded-[35px] outline-none font-bold focus:ring-2 ring-black">
+                <input type="tel" id="cust-phone" placeholder="Number" class="w-full p-6 bg-gray-50 rounded-[35px] outline-none font-bold focus:ring-2 ring-black">
+                <div class="pt-4 border-t border-gray-100 space-y-6">
+                    <input type="text" id="cust-state" placeholder="State" class="w-full p-6 bg-gray-50 rounded-[35px] outline-none font-bold focus:ring-2 ring-black">
+                    <textarea id="cust-address" placeholder="Address" rows="3" class="w-full p-6 bg-gray-50 rounded-[35px] outline-none font-bold focus:ring-2 ring-black"></textarea>
+                    <input type="number" id="cust-pin" placeholder="Pincode" class="w-full p-6 bg-gray-50 rounded-[35px] outline-none font-bold focus:ring-2 ring-black">
+                </div>
+                <button onclick="sendOrder()" class="w-full p-8 bg-black text-white rounded-[45px] font-black text-xl mt-8 uppercase tracking-widest shadow-2xl active:scale-95 transition-all">PLACE ORDER</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop src="Music.mp3"></audio>
+
+    <script>
+        const product = { id: 1, title: 'DATE SEED ROAST', price: 799, img: 'Prg.JPG' };
+        let cartQty = 0;
+        let isIslandExpanded = false;
+        let currentMode = 'idle'; 
+        let activeOrderID = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
+        function handleIslandClick(e) {
+            e.stopPropagation();
+            if(currentMode !== 'idle') return; 
+            if(!isIslandExpanded) expandIslandForMusic();
+        }
+
+        function updateIslandContent(html) {
+            const content = document.getElementById('island-content');
+            content.style.opacity = '0';
+            setTimeout(() => {
+                content.innerHTML = html;
+                content.style.opacity = '1';
+                lucide.createIcons();
+            }, 250);
+        }
+
+        function expandIslandForMusic() {
+            const island = document.getElementById('dynamic-island');
+            isIslandExpanded = true;
+            island.classList.add('expanded');
+            const isPlaying = !document.getElementById('bg-music').paused;
+            updateIslandContent(`
+                <div class="flex items-center justify-between w-full animate-in zoom-in duration-500">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center"><i data-lucide="music" class="w-5 h-5 text-white"></i></div>
+                        <div class="flex flex-col"><span class="text-[9px] font-black uppercase opacity-60">Dazeen Beats</span><span class="text-xs font-bold">Ambient Mix</span></div>
+                    </div>
+                    <button onclick="toggleMusic(event)" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center active:scale-90 transition-transform"><i data-lucide="${isPlaying ? 'pause' : 'play'}" class="w-4 h-4"></i></button>
+                </div>
+            `);
+        }
+
+        function expandIslandForDetail() {
+            const island = document.getElementById('dynamic-island');
+            currentMode = 'detail';
+            island.classList.add('expanded');
+            updateIslandContent(`
+                <div class="flex items-center justify-between w-full animate-in slide-in-from-right duration-500">
+                    <div class="flex flex-col"><span class="text-[9px] font-black uppercase opacity-60">Price</span><span class="text-xl font-black">₹${product.price}</span></div>
+                    <button onclick="addToCartFlow(event)" class="bg-white text-black px-8 py-3 rounded-[24px] font-black text-[10px] uppercase active:scale-90 transition-transform">Add to Cart</button>
+                </div>
+            `);
+        }
+
+        function expandIslandForCart() {
+            const island = document.getElementById('dynamic-island');
+            currentMode = 'cart';
+            island.classList.add('expanded');
+            updateIslandContent(`
+                <div class="flex items-center justify-between w-full animate-in slide-in-from-bottom duration-500">
+                    <div class="flex flex-col"><span class="text-[9px] font-black uppercase opacity-60">Total</span><span class="text-xl font-black">₹${product.price * cartQty}</span></div>
+                    <button onclick="openCheckout(event)" class="bg-white text-black px-10 py-3 rounded-[24px] font-black text-[11px] uppercase active:scale-90 transition-transform">Checkout</button>
+                </div>
+            `);
+        }
+
+        function expandIslandForTracking() {
+            const island = document.getElementById('dynamic-island');
+            currentMode = 'tracking';
+            island.classList.remove('expanded', 'cart-notif');
+            setTimeout(() => {
+                island.classList.add('tracking-mode');
+                updateIslandContent(`
+                    <div class="w-full animate-in fade-in duration-700">
+                        <div class="flex justify-between items-start mb-1">
+                            <div><p class="text-[10px] font-bold opacity-60 mb-0.5">Order Confirmation</p><p class="text-[11px] font-bold">#DZ-${activeOrderID}</p></div>
+                            <div class="text-[12px] font-black tracking-tighter uppercase border border-white/20 px-2 py-0.5 rounded">DAZEEN</div>
+                        </div>
+                        <div class="mt-4"><p class="text-[10px] font-bold opacity-60 uppercase tracking-widest">Processing order</p><h4 class="text-xl font-black leading-none mt-1">Delivery in <span class="text-green-500">4-7 days</span></h4></div>
+                        <div class="tracking-line">
+                            <div class="tracking-progress"></div>
+                            <div class="tracking-node" style="left: 0%"><i data-lucide="package" class="w-3 h-3"></i></div>
+                            <div class="tracking-node" style="left: 33%"><i data-lucide="truck" class="w-3 h-3 text-blue-500"></i></div>
+                            <div class="tracking-node" style="left: 100%; opacity: 0.3;"><i data-lucide="home" class="w-3 h-3"></i></div>
+                        </div>
+                    </div>
+                `);
+            }, 50);
+        }
+
+        function closeIsland(e) {
+            if(currentMode !== 'idle') return; 
+            const island = document.getElementById('dynamic-island');
+            if(isIslandExpanded) {
+                isIslandExpanded = false;
+                island.classList.remove('expanded', 'tracking-mode', 'cart-notif');
+                updateIslandContent(`<span class="font-black text-[11px] uppercase tracking-tighter w-full text-center">DAZEEN</span>`);
+            }
+        }
+
+        function addToCartFlow(e) {
+            if(e) e.stopPropagation();
+            const island = document.getElementById('dynamic-island');
+            cartQty++;
+            renderCart();
+            island.classList.add('cart-notif');
+            updateIslandContent(`<div class="flex items-center gap-2 font-black text-[10px] uppercase"><i data-lucide="check" class="w-3.5 h-3.5"></i> In Basket</div>`);
+            setTimeout(() => {
+                island.classList.remove('cart-notif');
+                closeDetailPage();
+                openCart();
+            }, 1000);
+        }
+
+        function scrollToProduct() { document.getElementById('product-view').scrollIntoView({ behavior: 'smooth' }); }
+        function openDetailPage() { document.getElementById('detail-page').classList.add('active'); expandIslandForDetail(); }
+        function closeDetailPage() { currentMode = 'idle'; document.getElementById('detail-page').classList.remove('active'); closeIsland(); }
+        function openCart() { document.getElementById('cart-sheet').classList.add('active'); renderCart(); expandIslandForCart(); }
+        function closeAll() { currentMode = 'idle'; document.getElementById('cart-sheet').classList.remove('active'); closeIsland(); }
+        function openCheckout(e) { if(e) e.stopPropagation(); if(cartQty === 0) return; document.getElementById('checkout-overlay').classList.remove('hidden'); }
+        function closeCheckout() { document.getElementById('checkout-overlay').classList.add('hidden'); }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            if(cartQty === 0) {
+                container.innerHTML = `<div class="py-24 text-center text-gray-300 font-black uppercase tracking-widest text-xs">Basket is empty</div>`;
+                return;
+            }
+            container.innerHTML = `
+                <div class="flex items-center gap-6 bg-gray-50 p-8 rounded-[45px] border border-black/5 shadow-sm mb-6">
+                    <img src="${product.img}" class="w-20 h-20 object-contain bg-white rounded-3xl">
+                    <div class="flex-1">
+                        <h4 class="font-black text-[11px] uppercase tracking-tight">${product.title}</h4>
+                        <p class="text-blue-600 font-black text-xl">₹${product.price}</p>
+                    </div>
+                    <div class="flex items-center gap-5 bg-white px-5 py-2.5 rounded-full border border-gray-100">
+                        <button onclick="updateQty(-1)" class="font-black text-xl">-</button>
+                        <span class="font-black text-lg w-5 text-center">${cartQty}</span>
+                        <button onclick="updateQty(1)" class="font-black text-xl">+</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateQty(d) { cartQty = Math.max(0, cartQty + d); renderCart(); if(currentMode === 'cart') expandIslandForCart(); }
+
+        function sendOrder() {
+            const n = document.getElementById('cust-name').value, p = document.getElementById('cust-phone').value,
+                  s = document.getElementById('cust-state').value, a = document.getElementById('cust-address').value,
+                  pin = document.getElementById('cust-pin').value;
+            if(!n || !p || !s || !a || !pin) return alert("Bhai, sari details bharo!");
+
+            activeOrderID = Math.floor(1000 + Math.random() * 9000);
+            closeCheckout();
+            document.getElementById('cart-sheet').classList.remove('active');
+            currentMode = 'idle'; 
+            const island = document.getElementById('dynamic-island');
+            island.classList.remove('expanded', 'cart-notif');
+            
+            setTimeout(() => { expandIslandForTracking(); }, 600);
+            const total = product.price * cartQty;
+            const msg = `*DAZEEN ORDER*%0A*Order ID:* #DZ-${activeOrderID}%0A*Item:* ${product.title} (x${cartQty})%0A*Total:* ₹${total}%0A%0A*Name:* ${n}%0A*Number:* ${p}%0A*State:* ${s}%0A*Address:* ${a}, ${pin}`;
+            
+            setTimeout(() => { window.location.href = `https://wa.me/919834500977?text=${msg}`; }, 4500);
+        }
+
+        function toggleMusic(e) { if(e) e.stopPropagation(); const a = document.getElementById('bg-music'); if(a.paused) a.play(); else a.pause(); expandIslandForMusic(); }
+        function handleJoin() { 
+            const email = document.getElementById('join-email').value; if(!email) return;
+            document.getElementById('dynamic-island').classList.add('cart-notif');
+            updateIslandContent(`<span class="text-[10px] font-black uppercase">Welcome!</span>`);
+            setTimeout(() => { document.getElementById('dynamic-island').classList.remove('cart-notif'); closeIsland(); document.getElementById('join-email').value = ''; }, 2000);
+        }
+        function handleImgError(i) { i.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23eee'/%3E%3C/svg%3E"; }
+    </script>
+</body>
+</html>
+
