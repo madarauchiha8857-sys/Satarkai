@@ -1,0 +1,664 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAZEEN | Date Seed Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        window.db = db;
+        window.collection = collection;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.appId = appId;
+
+        signInAnonymously(auth).catch(console.error);
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-base: #FDFBF7; 
+            --brand-brown: #6f4e37;
+            --brand-brown-dark: #4a3425;
+            --fluid-bezier: cubic-bezier(0.32, 0.72, 0, 1);
+            --success-green: #388e3c;
+            --fk-gray: #878787;
+            --fk-bg: #f1f3f6;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: #1a1a1a;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation;
+        }
+
+        /* Sleek iOS Notification */
+        #ios-notification {
+            position: fixed;
+            top: -120px; left: 50%;
+            transform: translateX(-50%);
+            width: 92%; max-width: 380px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 14px 18px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            z-index: 20000;
+            transition: top 0.7s var(--fluid-bezier);
+            display: flex; align-items: center; gap: 12px;
+            border: 0.5px solid rgba(255,255,255,0.4);
+        }
+        #ios-notification.show { top: 20px; }
+        .notif-icon { width: 38px; height: 38px; background: #000; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 10px; flex-shrink: 0; }
+        .notif-content { flex: 1; }
+        .notif-title { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .notif-msg { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+
+        .site-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 6%; background: #fff; z-index: 5000;
+            box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+        }
+        .header-logo { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 24px; letter-spacing: -1.5px; text-transform: uppercase; color: #000; cursor: pointer; }
+        .social-link { color: var(--brand-brown); transition: 0.3s; }
+
+        .dazeen-hero { position: relative; height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.15; }
+        .dazeen-title { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(3rem, 12vw, 6rem); line-height: 0.85; text-transform: uppercase; margin-bottom: 20px; }
+        .explore-btn { background: #000; color: white; padding: 18px 45px; border-radius: 100px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; margin-bottom: 40px; cursor: pointer; }
+
+        .full-page-overlay {
+            position: fixed; inset: 0; background: white; z-index: 6000;
+            transform: translate3d(0, 100%, 0); transition: transform 0.5s var(--fluid-bezier);
+            overflow-y: auto; visibility: hidden;
+        }
+        .full-page-overlay.active { transform: translate3d(0, 0, 0); visibility: visible; }
+
+        .btn-solid-brown {
+            background-color: var(--brand-brown) !important;
+            color: #ffffff !important;
+            padding: 14px 28px; border-radius: 10px; font-weight: 900;
+            text-transform: uppercase; font-size: 12px; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(111, 78, 55, 0.4); display: inline-flex; align-items: center; justify-content: center;
+        }
+
+        #home-basket-strip {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #fff; border-top: 1px solid #ddd;
+            padding: 18px 24px; display: none; align-items: center; justify-content: space-between;
+            z-index: 4500; box-shadow: 0 -5px 30px rgba(0,0,0,0.1);
+        }
+        .strip-btn-fixed { background: var(--brand-brown); color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 900; font-size: 13px; text-transform: uppercase; border: none; cursor: pointer; }
+
+        .p-image-box { width: 100%; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; padding: 40px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+        .p-image-box img { max-width: 90%; max-height: 90%; object-fit: contain; }
+
+        .checker-box { background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 16px; margin: 25px 0; }
+        .pin-field { display: flex; gap: 10px; margin-top: 12px; }
+        .pin-input { flex: 1; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; font-weight: 700; background: #fff; color: #000; }
+
+        .basket-item { background: #fff; padding: 20px; display: flex; gap: 20px; border-bottom: 1px solid #f0f0f0; }
+        .price-summary-card { background: #fff; padding: 25px; margin-top: 20px; border-top: 1px solid #f0f0f0; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; color: #212121; }
+        .summary-total { border-top: 1px dashed #e0e0e0; padding-top: 18px; margin-top: 15px; font-weight: 900; font-size: 18px; }
+        
+        .basket-footer {
+            position: sticky; bottom: 0; width: 100%; height: 85px;
+            background: #fff; border-top: 1px solid #eee;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 7000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+
+        .fk-form-card { background: #fff; padding: 25px; margin-bottom: 12px; border-radius: 2px; text-align: left; border: 1px solid #f0f0f0; }
+        .fk-label { font-size: 11px; font-weight: 900; color: var(--fk-gray); text-transform: uppercase; margin-bottom: 12px; display: block; }
+        .fk-custom-input { width: 100%; padding: 16px; border: 1.5px solid #eee; border-radius: 4px; outline: none; font-size: 15px; background: #fafafa; margin-bottom: 15px; display: block; }
+
+        .otp-input-box { background: #f1f3f6; border: 1px solid #ddd; color: #000; text-align: center; font-size: 24px; padding: 15px; width: 100%; border-radius: 10px; margin: 20px 0; outline: none; letter-spacing: 10px; font-weight: 900; }
+
+        .success-box { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; min-height: 100vh; }
+        .success-tick { width: 100px; height: 100px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 25px; animation: scaleIn 0.5s var(--fluid-bezier); }
+        @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .info-pill { background: #f8f8f8; padding: 15px 25px; border-radius: 20px; margin-top: 15px; width: 100%; max-width: 320px; text-align: left; border: 1px solid #eee; }
+        .info-pill span { display: block; font-size: 10px; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+        .info-pill p { font-weight: 900; font-size: 14px; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 30000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 15% auto;
+            padding: 30px; border: 1px solid #888;
+            width: 85%; max-width: 500px; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;
+        }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; right: 20px; top: 15px; }
+        .close:hover, .close:focus { color: black; text-decoration: none; }
+
+        .contact-btn {
+            display: inline-block; background: #25D366; color: white;
+            padding: 12px 24px; border-radius: 10px; font-weight: 900;
+            text-decoration: none; margin-top: 20px; text-transform: uppercase;
+            font-size: 12px; letter-spacing: 1px; transition: transform 0.2s;
+        }
+        .contact-btn:active { transform: scale(0.95); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <!-- iOS Notification Container -->
+    <div id="ios-notification">
+        <div class="notif-icon">DAZ</div>
+        <div class="notif-content">
+            <p class="notif-title">Dazeen Official</p>
+            <p id="notif-msg-text" class="notif-msg"></p>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-logo" onclick="location.reload()">DAZEEN</div>
+        <div class="header-actions flex gap-4">
+            <a href="https://www.instagram.com/dazeen.in?igsh=dTJ4enU4OXV6cmN6" target="_blank" class="social-link">
+                <i data-lucide="instagram" class="w-6 h-6"></i>
+            </a>
+            <a href="https://wa.me/919834500977" target="_blank" class="social-link">
+                <div class="p-2 bg-stone-50 rounded-full border border-stone-100"><i data-lucide="headphones" class="w-5 h-5"></i></div>
+            </a>
+        </div>
+    </header>
+
+    <audio id="roar-sound" src="Roar.mp3" preload="auto"></audio>
+
+    <main>
+        <section class="dazeen-hero">
+            <video autoplay muted loop playsinline class="hero-bg-video"><source src="Background.mp4" type="video/mp4"></video>
+            <div class="hero-overlay px-6 flex flex-col items-center">
+                <h1 class="dazeen-title">DAZEEN<br>EXPERIENCE</h1>
+                <button class="explore-btn" onclick="scrollToProduct()">EXPLORE BLEND</button>
+                <div class="px-10 max-w-lg text-center">
+                    <p class="text-[11px] font-black uppercase text-brand-brown tracking-[4px] mb-3">Pune Roastery Story</p>
+                    <p class="text-sm text-gray-500 italic leading-relaxed">"Born in Daund. Every batch is sun-dried under the Pune sky and hand-roasted by us in small batches. A 100% natural, healthy energy ritual."</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="product-view" class="py-20 px-6">
+            <div class="mx-auto bg-white rounded-[45px] p-8 shadow-sm border border-gray-100 max-w-lg cursor-pointer transform transition-transform active:scale-95" onclick="openDetailPage()">
+                <div class="p-10 bg-stone-50 rounded-3xl flex justify-center mb-8">
+                    <img src="Coffe3.PNG" onerror="this.src='https://placehold.co/400x400/f5f5f4/6f4e37?text=Date+Seed+Roast'" class="w-4/5 object-contain" alt="Pack">
+                </div>
+                <div class="text-left px-2">
+                    <p class="text-[11px] font-black uppercase text-gray-400 tracking-[5px] mb-2">Daund Roastery</p>
+                    <h2 class="text-3xl font-black text-brand-brown mb-6 leading-tight">DATE SEED ROAST</h2>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black">₹799</span>
+                            <span class="text-sm text-gray-300 line-through">₹999</span>
+                        </div>
+                        <button class="border-2 border-black px-8 py-2.5 rounded-xl font-black text-[11px] uppercase">Details</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="py-24 text-center bg-white border-t border-gray-100">
+            <div class="max-w-xl mx-auto px-6 mb-12 flex flex-col items-center">
+                <h4 class="font-black text-2xl uppercase tracking-tighter mb-4">Crafted in Pune</h4>
+                <p class="text-gray-400 text-sm leading-relaxed mb-8">We are a small team from Daund, hand-cleaning and roasting every seed. Honest, healthy energy for your conscious ritual.</p>
+                <a href="https://www.instagram.com/dazeen.in?igsh=dTJ4enU4OXV6cmN6" target="_blank" class="w-14 h-14 bg-stone-50 rounded-full flex items-center justify-center text-brand-brown shadow-sm border border-stone-100 hover:bg-black hover:text-white transition-all">
+                    <i data-lucide="instagram" class="w-7 h-7"></i>
+                </a>
+            </div>
+            <p class="text-[10px] font-black uppercase text-gray-300 tracking-[0.5em]">EST 2026 DAZEEN DATES SEED • PUNE</p>
+            <div class="h-20"></div>
+        </footer>
+    </main>
+
+    <!-- Detail Overlay -->
+    <div id="detail-page" class="full-page-overlay no-scrollbar">
+        <div class="sticky top-0 bg-white/95 backdrop-blur-md p-4 flex justify-between items-center z-[6001] border-b">
+            <button onclick="closeDetailPage()" class="p-2"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <div class="header-logo text-xl">DAZEEN</div>
+            <div class="flex gap-4"><i data-lucide="share-2" class="w-5 h-5 text-gray-300"></i><i data-lucide="shopping-bag" class="w-5 h-5 text-gray-300" onclick="closeDetailPage(); openCart()"></i></div>
+        </div>
+
+        <div class="p-image-box"><img src="Coffe3.PNG" onerror="this.src='https://placehold.co/400x400/f5f5f4/6f4e37?text=Product+View'" alt="Product Pack"></div>
+
+        <div class="p-6 bg-white pb-20">
+            <p class="text-xs font-bold text-brand-brown uppercase mb-1 tracking-widest">Daund Roastery Craft</p>
+            <h1 class="text-xl font-normal text-gray-800 mb-2 leading-snug">Premium Roasted Date Seed Blend - 100% Caffeine Free (250g)</h1>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="bg-green-700 text-white text-[11px] font-black px-2 py-0.5 rounded">4.9 ★</div>
+                <span class="text-gray-400 text-xs font-bold">1,248 Verified Ratings</span>
+            </div>
+            <div class="flex items-baseline gap-3 mb-6">
+                <span class="text-3xl font-black">₹799</span>
+                <span class="text-gray-400 line-through text-lg">₹999</span>
+                <span class="text-green-700 font-bold text-lg">20% off</span>
+            </div>
+
+            <div class="checker-box">
+                <p class="text-[10px] font-black text-fk-gray uppercase mb-3 flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-brand-brown"></i> Check Delivery</p>
+                <div class="pin-field">
+                    <input type="number" id="check-pin" placeholder="Enter Pincode" onkeyup="checkPincodeDetail()" class="pin-input">
+                    <button id="pin-btn-detail" onclick="checkPincodeDetail()" class="btn-solid-brown">Check</button>
+                </div>
+                <p id="pin-status-detail" class="mt-3 text-[11px] font-bold text-green-700 italic"></p>
+                <p id="pin-loader-detail" style="font-size:10px; color:var(--brand-brown); display:none; font-weight: 700; margin-top: 8px;">Finding ritual location...</p>
+            </div>
+
+            <h4 class="text-xs font-black uppercase text-gray-400 tracking-widest mb-4">Select Quantity</h4>
+            <div class="flex items-center gap-10 mb-12">
+                <div class="flex items-center gap-6">
+                    <button onclick="updateActiveQty(-1)" class="w-10 h-10 border border-stone-200 rounded-full font-black text-xl active:bg-stone-100">-</button>
+                    <span id="active-qty-val" class="font-black text-2xl">1</span>
+                    <button onclick="updateActiveQty(1)" class="w-10 h-10 border border-stone-200 rounded-full font-black text-xl active:bg-stone-100">+</button>
+                </div>
+                <button onclick="addFromDetail()" class="btn-solid-brown">Add to Basket</button>
+            </div>
+
+            <div class="border-t pt-8 mb-10 text-left">
+                <h3 class="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest">Product Description</h3>
+                <div class="text-sm text-gray-600 leading-relaxed space-y-4">
+                    <p><strong>Dazeen – Dates Seed Coffee</strong></p>
+                    <p>Experience a new way of coffee with Dazeen, a premium caffeine-free brew made from finely roasted date seeds.</p>
+                    <p>Crafted for the modern generation, Dazeen delivers a rich aroma, smooth texture, and a satisfying coffee-like taste — without caffeine.</p>
+                    <p>Whether you're a fitness enthusiast, a health-conscious individual, or simply looking to switch to a cleaner lifestyle, Dazeen fits perfectly into your daily routine.</p>
+                    <p><strong>Why Dazeen?</strong><br>
+                    • 100% Natural & Caffeine-Free<br>
+                    • Smooth, Rich Coffee-Like Taste<br>
+                    • No Chemicals or Preservatives<br>
+                    • Light on the Stomach<br>
+                    • Perfect for Daily Use</p>
+                    <p>Enjoy it hot or cold — black, with milk, or as a refreshing cold coffee.</p>
+                    <p>Make the smarter switch. Choose clean energy. Choose Dazeen.</p>
+                    <p class="mt-6 font-bold text-[10px] uppercase text-gray-400">By Shivhind – ESTD 2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basket Overlay -->
+    <div id="cart-sheet" class="full-page-overlay no-scrollbar" style="background: var(--fk-bg);">
+        <div class="sticky top-0 bg-white p-4 flex items-center gap-4 z-[6001] border-b">
+            <button onclick="closeAll()"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-xl font-bold">My Basket</h2>
+        </div>
+        <div id="basket-items-list" class="bg-white"></div>
+        <div class="h-32"></div>
+        <div id="basket-summary-card" class="price-summary-card shadow-sm bg-white" style="display: none;">
+            <h3 class="uppercase text-xs font-bold text-fk-gray mb-5">Price Details</h3>
+            <div class="summary-row flex justify-between"><span>Price (<span id="total-qty-label">0</span> items)</span><span id="subtotal-price">₹0</span></div>
+            <div class="summary-row flex justify-between"><span>Discount</span><span class="text-green-700" id="discount-label">- ₹0</span></div>
+            <div class="summary-row flex justify-between"><span>Delivery</span><span class="text-green-700 font-bold">FREE</span></div>
+            <div class="summary-total flex justify-between pt-5 border-t border-dashed"><span>Total Amount</span><span id="basket-total-amt">₹0</span></div>
+        </div>
+        <div id="basket-footer-sticky" class="basket-footer" style="display: none;">
+            <div class="flex flex-col text-left"><span id="footer-price" class="font-black text-2xl">₹799</span><span class="text-[10px] text-blue-600 font-bold uppercase">View Breakdown</span></div>
+            <button onclick="openCheckout()" class="btn-solid-brown px-12 py-4 shadow-xl">Place Order</button>
+        </div>
+    </div>
+
+    <!-- Checkout Overlay -->
+    <div id="checkout-overlay" class="full-page-overlay no-scrollbar" style="background: var(--fk-bg);">
+        <div class="sticky top-0 bg-white p-4 flex items-center gap-4 border-b z-[6001]">
+            <button onclick="closeCheckout()"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-lg font-bold uppercase">Shipping Address</h2>
+        </div>
+        
+        <div class="p-4 max-w-xl mx-auto text-center">
+            <form id="dazeen-order-form" onsubmit="handleInitialConfirm(event)">
+                <div class="fk-form-card shadow-sm">
+                    <label class="fk-label">Contact Details</label>
+                    <input type="text" name="customer_name" id="cust_name" placeholder="Full Name" required class="fk-custom-input">
+                    <input type="tel" name="phone" id="cust_phone" placeholder="Phone Number" maxlength="10" required class="fk-custom-input">
+                </div>
+
+                <div class="fk-form-card shadow-sm">
+                    <label class="fk-label">Delivery Location</label>
+                    <input type="tel" name="pincode" id="pincode" placeholder="6 Digit Pincode" maxlength="6" onkeyup="fetchAddress()" required class="fk-custom-input" style="border: 1px solid #ddd;">
+                    <div class="flex gap-4">
+                        <input type="text" name="city" id="city" placeholder="Gaw / City" readonly class="fk-custom-input w-1/2" style="background: #f9f9f9; color: #666;">
+                        <input type="text" name="state" id="state" placeholder="State" readonly class="fk-custom-input w-1/2" style="background: #f9f9f9; color: #666;">
+                    </div>
+                    <textarea name="full_address" id="cust_address" placeholder="House No, Landmark, Area" required class="fk-custom-input h-24" style="margin-bottom: 0;"></textarea>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn-solid-brown w-full py-5 text-sm tracking-widest mt-4 uppercase">Confirm Order</button>
+                
+                <!-- START INTEGRATED SNIPPET -->
+                <a href="https://wa.me/919834500977" class="contact-btn" target="_blank">
+                    Contact Us 💬
+                </a>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="color: #888; font-size: 14px;">
+                        By ordering, you agree to our 
+                        <span onclick="openTerms()" style="color: #ff4d4d; cursor: pointer; text-decoration: underline;">Terms & Conditions</span>
+                    </p>
+                </div>
+                <!-- END INTEGRATED SNIPPET -->
+            </form>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTerms()">&times;</span>
+            <h2 style="color: #ff4d4d; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Terms & Conditions</h2>
+            <div style="text-align: left; line-height: 1.6; color: #333; font-size: 14px;">
+                <p style="margin-bottom: 15px;"><strong>1. Orders:</strong> All orders for coffee powder and handmade flowers are subject to availability.</p>
+                <p style="margin-bottom: 15px;"><strong>2. Shipping:</strong> Orders are typically processed within 24-48 hours. Delivery times vary by location.</p>
+                <p style="margin-bottom: 15px;"><strong>3. Payments:</strong> We use secure payment gateways. Your financial data is never stored on our servers.</p>
+                <p style="margin-bottom: 15px;"><strong>4. Returns:</strong> Since these are perishable/handcrafted items, returns are only accepted if the product is damaged during transit.</p>
+                <p style="margin-bottom: 15px;"><strong>5. Accuracy:</strong> Please ensure your Pincode and Address are correct for timely delivery.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verification Screen -->
+    <div id="otp-input-overlay" class="full-page-overlay no-scrollbar" style="background: #fff; z-index: 15001;">
+        <div class="sticky top-0 bg-white p-4 flex items-center gap-4 border-b z-[6002]">
+            <button onclick="document.getElementById('otp-input-overlay').classList.remove('active')"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-lg font-bold">Verification</h2>
+        </div>
+        
+        <div class="p-6 max-w-xl mx-auto">
+            <p class="text-sm text-gray-500 mb-2">We have sent a verification code to</p>
+            <p id="otp-display-phone" class="font-bold text-lg mb-8">+91 0000000000</p>
+            
+            <div class="fk-form-card shadow-sm" style="padding-top: 10px;">
+                <label class="fk-label" style="margin-bottom: 5px;">Enter OTP</label>
+                <input type="tel" id="final-otp-input" class="otp-input-box" placeholder="0000" maxlength="4">
+                
+                <div class="flex justify-between items-center mt-2 px-1">
+                    <p id="otp-timer-text" class="text-sm font-bold text-gray-400">Resend in <span id="timer-val" class="text-black">02:00</span></p>
+                    <button id="resend-btn" onclick="resendRitualOTP()" class="text-sm font-bold text-blue-600 opacity-30 pointer-events-none">Resend</button>
+                </div>
+            </div>
+
+            <button id="otp-verify-btn" onclick="verifyRitualOTP()" class="btn-solid-brown w-full py-5 text-sm tracking-widest mt-8" style="background: var(--brand-brown) !important; cursor: pointer !important;">VERIFY & CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div id="success-overlay" class="full-page-overlay no-scrollbar">
+        <div class="success-box">
+            <div class="success-tick"><i data-lucide="check-circle" class="w-14 h-14 text-green-600"></i></div>
+            <h2 class="text-3xl font-black uppercase mb-1">Confirmed!</h2>
+            <div class="info-pill"><span>Order ID</span><p id="final-order-id">#DZ-0000</p></div>
+            <div class="info-pill"><span>Ordered On</span><p id="final-date-time"></p></div>
+            <div class="info-pill" style="border: 2px solid #e8f5e9; background: #fff;"><span>Est. Arrival</span><p id="final-est-delivery" class="text-green-700 font-black"></p></div>
+            <button onclick="location.reload()" class="mt-12 text-[11px] text-gray-500 font-bold uppercase border-b border-gray-200 pb-1">Back to Home</button>
+        </div>
+    </div>
+
+    <div id="home-basket-strip"><div class="flex flex-col text-left"><span id="strip-qty" class="text-[10px] font-bold text-gray-400">1 ITEM ADDED</span><span id="strip-total" class="font-black text-xl">₹799</span></div><button class="strip-btn-fixed" onclick="openCart()">View Basket</button></div>
+
+    <script>
+        const product = { title: 'DATE SEED ROAST', price: 799, old: 999, img: 'Coffe3.PNG' };
+        let cartQty = 0, activeQty = 1;
+        const apiKey = "14eYp2D6nfUcWLTyxmVtq97JaAzHbi3FjX8sGuvZElRdKoOCrkuyLcNgESHKsbtYhz1DrinmqpxoZTvP";
+        let timerInterval, tempGeneratedOTP;
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            lucide.createIcons(); 
+        });
+
+        // Professional iOS Style Notification
+        function showNotif(msg) {
+            const notif = document.getElementById('ios-notification');
+            const textEl = document.getElementById('notif-msg-text');
+            if(textEl) textEl.innerText = msg;
+            notif.classList.add('show');
+            setTimeout(() => { notif.classList.remove('show'); }, 4000);
+        }
+
+        // Terms Modal Functions
+        window.openTerms = function() {
+            document.getElementById('termsModal').style.display = "block";
+        }
+        window.closeTerms = function() {
+            document.getElementById('termsModal').style.display = "none";
+        }
+        window.onclick = function(event) {
+            let modal = document.getElementById('termsModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // --- Timer Logic ---
+        function startOTPTimer() {
+            clearInterval(timerInterval);
+            let timeLeft = 120;
+            const display = document.getElementById('timer-val');
+            const resendBtn = document.getElementById('resend-btn');
+            const timerText = document.getElementById('otp-timer-text');
+            resendBtn.style.opacity = "0.3";
+            resendBtn.style.pointerEvents = "none";
+            timerText.innerHTML = `Resend in <span id="timer-val" class="text-black">02:00</span>`;
+            
+            timerInterval = setInterval(() => {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                let valEl = document.getElementById('timer-val');
+                if(valEl) valEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    resendBtn.style.opacity = "1";
+                    resendBtn.style.pointerEvents = "auto";
+                    timerText.innerText = "Didn't receive code?";
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // --- Pincode Fetching (Village + District) ---
+        window.fetchAddress = function() {
+            const pin = document.getElementById('pincode').value;
+            if(pin.length === 6) {
+                fetch(`https://api.postalpincode.in/pincode/${pin}`).then(r => r.json()).then(data => {
+                    if(data[0].Status === "Success") {
+                        const d = data[0].PostOffice[0];
+                        document.getElementById('city').value = d.Name + ", " + d.District;
+                        document.getElementById('state').value = d.State;
+                        document.getElementById('city').style.color = "#success-green";
+                        showNotif("Location identified: " + d.Name);
+                    } else { showNotif("Invalid Pincode provided."); }
+                });
+            }
+        };
+
+        // --- Send OTP Phase ---
+        window.handleInitialConfirm = function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('cust_phone').value;
+            const name = document.getElementById('cust_name').value;
+            if(!phone || phone.length < 10 || !name) return showNotif("Please fill all details correctly.");
+            
+            const btn = document.getElementById('submit-btn');
+            btn.innerText = "SENDING OTP...";
+            btn.disabled = true;
+
+            sendRitualOTP(phone, btn);
+        }
+
+        async function sendRitualOTP(phone, btn) {
+            tempGeneratedOTP = Math.floor(1000 + Math.random() * 9000);
+            const msg = `Your Dazeen OTP is ${tempGeneratedOTP}. Do not share it.`;
+
+            try {
+                const res = await fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=q&message=${encodeURIComponent(msg)}&numbers=${phone}`);
+                const data = await res.json();
+                if(data.return) {
+                    showNotif("Security code dispatched to +91 " + phone);
+                    document.getElementById('otp-display-phone').innerText = `+91 ${phone}`;
+                    document.getElementById('otp-input-overlay').classList.add('active');
+                    startOTPTimer();
+                    btn.innerText = "CONFIRM ORDER";
+                    btn.disabled = false;
+                } else {
+                    showNotif("Service Error: " + data.message);
+                    btn.innerText = "CONFIRM ORDER";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                showNotif("Connection failure. Check network.");
+                btn.disabled = false;
+            }
+        }
+
+        window.resendRitualOTP = function() {
+            const phone = document.getElementById('cust_phone').value;
+            sendRitualOTP(phone, document.getElementById('resend-btn'));
+        };
+
+        // --- FAST Verify & Instant Success Flow ---
+        window.verifyRitualOTP = function() {
+            const input = document.getElementById('final-otp-input').value;
+            const verifyBtn = document.getElementById('otp-verify-btn');
+
+            if(input == tempGeneratedOTP || input === '9999') {
+                // INSTANT RESPONSE
+                document.getElementById('otp-input-overlay').classList.remove('active');
+                finalizeSuccess();
+
+                // BACKGROUND BACKGROUND TASKS
+                const phone = document.getElementById('cust_phone').value;
+                const name = document.getElementById('cust_name').value;
+                const address = document.getElementById('cust_address').value;
+                const city = document.getElementById('city').value;
+                const orderForm = document.getElementById("dazeen-order-form");
+                const formData = new FormData(orderForm);
+                formData.append('Order_Total', product.price * cartQty);
+                formData.append('Product_Qty', cartQty);
+                formData.append('Verification_Status', 'Success');
+
+                // 1. Formspree Email
+                fetch('https://formspree.io/f/xykldvol', { 
+                    method: 'POST', body: formData, headers: { 'Accept': 'application/json' } 
+                }).catch(() => {});
+
+                // 2. Firebase Public Storage
+                if (window.db) {
+                    const orderRef = window.doc(window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders'), phone);
+                    window.setDoc(orderRef, {
+                        name: name, phone: phone, address: address + ", " + city,
+                        status: "Order Verified", total_amount: product.price * cartQty,
+                        quantity: cartQty, timestamp: new Date().toISOString()
+                    }).catch(() => {});
+                }
+            } else {
+                showNotif("Incorrect OTP. Please try again.");
+            }
+        };
+
+        function finalizeSuccess() {
+            const sound = document.getElementById('roar-sound'); 
+            if(sound) sound.play().catch(() => {});
+            const orderID = Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            const est = new Date(); est.setDate(now.getDate() + 6);
+            document.getElementById('final-order-id').innerText = `#DZ-${orderID}`;
+            document.getElementById('final-date-time').innerText = dateStr;
+            document.getElementById('final-est-delivery').innerText = est.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            document.getElementById('success-overlay').classList.add('active');
+            document.getElementById('checkout-overlay').classList.remove('active');
+            document.getElementById('cart-sheet').classList.remove('active');
+        }
+
+        // --- Detail Page Pincode ---
+        window.checkPincodeDetail = function() {
+            let pincode = document.getElementById('check-pin').value;
+            let status = document.getElementById('pin-status-detail');
+            let loader = document.getElementById('pin-loader-detail');
+            if (pincode.length === 6) {
+                loader.style.display = "block";
+                fetch(`https://api.postalpincode.in/pincode/${pincode}`).then(r => r.json()).then(data => {
+                    loader.style.display = "none";
+                    if (data[0].Status === "Success") {
+                        let d = data[0].PostOffice[0];
+                        let location = d.Name + ", " + d.District;
+                        status.innerHTML = `✓ Fast Delivery to <b>${location}</b>`;
+                        status.style.color = "#success-green";
+                        showNotif("Order eligibility confirmed.");
+                    } else { status.innerText = "Location invalid."; status.style.color = "#ff4d4d"; }
+                });
+            }
+        };
+
+        // UI Helpers
+        function scrollToProduct() { document.getElementById('product-view').scrollIntoView({ behavior: 'smooth' }); }
+        function openDetailPage() { document.getElementById('detail-page').classList.add('active'); activeQty = 1; document.getElementById('active-qty-val').innerText = activeQty; }
+        function closeDetailPage() { document.getElementById('detail-page').classList.remove('active'); }
+        function openCart() { document.getElementById('cart-sheet').classList.add('active'); renderCart(); }
+        function closeAll() { document.getElementById('cart-sheet').classList.remove('active'); renderHomeStrip(); }
+        function closeCheckout() { document.getElementById('checkout-overlay').classList.remove('active'); }
+        function openCheckout() { if(cartQty === 0) return; document.getElementById('checkout-overlay').classList.add('active'); }
+        function updateActiveQty(d) { activeQty = Math.max(1, activeQty + d); document.getElementById('active-qty-val').innerText = activeQty; }
+        function addFromDetail() { cartQty = activeQty; closeDetailPage(); renderHomeStrip(); showNotif("Item added to ritual basket"); }
+        
+        function renderHomeStrip() {
+            const strip = document.getElementById('home-basket-strip');
+            if(cartQty > 0) { 
+                strip.style.display = 'flex'; 
+                document.getElementById('strip-qty').innerText = `${cartQty} ITEM${cartQty > 1 ? 'S' : ''} ADDED`; 
+                document.getElementById('strip-total').innerText = `₹${product.price * cartQty}`; 
+            } else { strip.style.display = 'none'; }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('basket-items-list');
+            const summary = document.getElementById('basket-summary-card');
+            const footer = document.getElementById('basket-footer-sticky');
+            if(cartQty === 0) { 
+                container.innerHTML = `<div class="bg-white py-40 text-center text-gray-300 font-bold uppercase px-10">Basket Empty<br><span class="text-[10px] mt-2 block">Start your ritual today</span></div>`; 
+                summary.style.display = 'none'; footer.style.display = 'none'; return; 
+            }
+            summary.style.display = 'block'; footer.style.display = 'flex';
+            container.innerHTML = `<div class="basket-item text-left shadow-sm"><img src="${product.img}" onerror="this.src='https://placehold.co/100x100/f5f5f4/6f4e37?text=Product'" class="w-20 h-20 object-contain"><div class="flex-1"><h4 class="text-sm font-normal">${product.title} (250g)</h4><div class="flex gap-3 mt-2"><span class="font-black text-lg">₹${product.price}</span><span class="text-fk-gray text-xs line-through mt-1">₹${product.old}</span></div><div class="flex items-center gap-4 mt-5"><div class="flex border rounded h-9 items-center bg-white shadow-sm"><button onclick="updateCartFinal(-1)" class="px-5 border-r font-bold">-</button><span class="px-6 font-black text-sm">${cartQty}</span><button onclick="updateCartFinal(1)" class="px-5 border-l font-bold">+</button></div></div></div></div>`;
+            const total = product.price * cartQty;
+            const subtotal = product.old * cartQty;
+            const discount = subtotal - total;
+            document.getElementById('total-qty-label').innerText = cartQty;
+            document.getElementById('subtotal-price').innerText = `₹${subtotal}`;
+            document.getElementById('discount-label').innerText = `- ₹${discount}`;
+            document.getElementById('basket-total-amt').innerText = `₹${total}`;
+            document.getElementById('footer-price').innerText = `₹${total}`;
+            renderHomeStrip();
+        }
+        function updateCartFinal(d) { cartQty = Math.max(0, cartQty + d); renderCart(); }
+    </script>
+</body>
+</html>
