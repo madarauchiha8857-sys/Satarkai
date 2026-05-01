@@ -1,0 +1,502 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAZEEN | Date Seed Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-base: #FDFBF7; 
+            --brand-brown: #6f4e37;
+            --brand-brown-dark: #4a3425;
+            --fluid-bezier: cubic-bezier(0.32, 0.72, 0, 1);
+            --success-green: #2e7d32;
+            --fk-blue: #2874f0;
+            --fk-gray: #878787;
+            --fk-bg: #f1f3f6;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: #1a1a1a;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- iOS Style Notification --- */
+        #ios-notification {
+            position: fixed;
+            top: -120px; left: 50%;
+            transform: translateX(-50%);
+            width: 90%; max-width: 400px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 16px 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 10000;
+            transition: top 0.6s var(--fluid-bezier);
+            display: flex; align-items: center; gap: 14px;
+            border: 0.5px solid rgba(255,255,255,0.4);
+        }
+        #ios-notification.show { top: 20px; }
+        .notif-icon { width: 38px; height: 38px; background: #000; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 11px; }
+
+        /* --- Header --- */
+        .site-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 6%; background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            z-index: 5000; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .header-logo { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -1px; text-transform: uppercase; color: #000; cursor: pointer; }
+
+        /* --- Overlays Fixed --- */
+        .full-page-overlay {
+            position: fixed; inset: 0; background: white; z-index: 6000;
+            transform: translate3d(0, 100%, 0); transition: transform 0.5s var(--fluid-bezier);
+            visibility: hidden; display: flex; flex-direction: column;
+        }
+        .full-page-overlay.active { transform: translate3d(0, 0, 0); visibility: visible; }
+
+        /* --- Hero --- */
+        .dazeen-hero { position: relative; height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .hero-bg-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; opacity: 0.2; }
+        .dazeen-title { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(3rem, 12vw, 6rem); line-height: 0.85; text-transform: uppercase; margin-bottom: 24px; }
+        .explore-btn { background: #000; color: white; padding: 18px 45px; border-radius: 100px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; font-size: 11px; cursor: pointer; transition: transform 0.3s; }
+        .explore-btn:active { transform: scale(0.95); }
+
+        /* --- Buttons --- */
+        .btn-brand {
+            background-color: var(--brand-brown); color: #fff;
+            padding: 16px 32px; border-radius: 12px; font-weight: 800;
+            text-transform: uppercase; font-size: 13px; letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(111, 78, 55, 0.3); width: 100%;
+        }
+
+        /* --- Home Basket Strip --- */
+        #home-basket-strip {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #fff; border-top: 1px solid #eee;
+            padding: 16px 24px; display: none; align-items: center; justify-content: space-between;
+            z-index: 4500; box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+            animation: slideUp 0.5s var(--fluid-bezier);
+        }
+
+        /* --- FK Cards --- */
+        .fk-item-card { background: #fff; padding: 20px; display: flex; gap: 15px; border-bottom: 1px solid #f0f0f0; }
+        .fk-address-card { background: #fff; padding: 24px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .fk-label { display: block; font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--fk-gray); margin-bottom: 8px; letter-spacing: 1px; }
+        .fk-input { width: 100%; padding: 14px; border: 1.5px solid #eee; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 20px; outline: none; transition: 0.3s; background: #fafafa; }
+        .fk-input:focus { border-color: var(--brand-brown); background: #fff; }
+
+        /* --- Payment Selection --- */
+        .method-card { border: 2px solid #eee; padding: 18px 24px; border-radius: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 12px; position: relative; }
+        .method-card.selected { border-color: var(--brand-brown); background: #fdfaf7; }
+        .method-card.disabled { opacity: 0.6; cursor: not-allowed; background: #f5f5f5; }
+        .maintenance-badge { position: absolute; right: 15px; top: 12px; background: #fdeded; color: #d32f2f; font-size: 8px; font-weight: 900; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; border: 1px solid #f9d5d5; }
+
+        /* --- Success Detail Pills --- */
+        .success-pill { background: #f9f9f9; padding: 16px 20px; border-radius: 18px; border: 1px solid #eee; text-align: left; }
+        .success-pill span { display: block; font-size: 9px; font-weight: 900; color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .success-pill p { font-weight: 800; font-size: 14px; color: #1a1a1a; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <div id="ios-notification">
+        <div class="notif-icon">DAZ</div>
+        <div class="notif-body"><p id="notif-text" style="font-size: 13px; font-weight: 600; color: #1a1a1a;"></p></div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-logo" onclick="location.reload()">DAZEEN</div>
+        <div class="flex items-center gap-4">
+            <a href="https://www.instagram.com/dazeen.in?igsh=dTJ4enU4OXV6cmN6" target="_blank" class="text-stone-800"><i data-lucide="instagram" class="w-6 h-6"></i></a>
+            <button onclick="openCart()" class="relative">
+                <i data-lucide="shopping-bag" class="w-6 h-6 text-stone-800"></i>
+                <span id="header-cart-count" class="absolute -top-1 -right-1 bg-brand-brown text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-black hidden">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="dazeen-hero">
+            <video autoplay muted loop playsinline class="hero-bg-video"><source src="Background.mp4" type="video/mp4"></video>
+            <div class="relative z-10 px-6 text-center flex flex-col items-center">
+                <p class="text-[10px] font-black tracking-[0.5em] text-brand-brown mb-6 uppercase">Pune Roastery Story</p>
+                <h1 class="dazeen-title">DAZEEN<br>EXPERIENCE</h1>
+                <button class="explore-btn mb-12" onclick="scrollToProduct()">Explore Blend</button>
+                <div class="max-w-xs text-center">
+                    <p class="text-sm text-stone-500 italic leading-relaxed">"Born in Daund. Every batch is sun-dried under the Pune sky and hand-roasted by us in small batches. 100% natural energy."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product View -->
+        <section id="product-view" class="py-24 px-6">
+            <div class="max-w-lg mx-auto bg-white rounded-[40px] p-8 shadow-sm border border-stone-100 cursor-pointer" onclick="openDetailPage()">
+                <div class="aspect-square bg-stone-50 rounded-[30px] flex items-center justify-center mb-10"><img src="Coffe3.PNG" class="w-3/4 object-contain" alt="Pack"></div>
+                <div class="text-left px-2">
+                    <p class="text-[10px] font-bold text-stone-400 tracking-[3px] mb-2 uppercase">Daund Roastery</p>
+                    <h2 class="text-3xl font-black text-stone-900 leading-tight mb-6 uppercase">Date Seed Roast</h2>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-baseline gap-2"><span class="text-2xl font-black">₹799</span><span class="text-sm text-stone-300 line-through">₹999</span></div>
+                        <button class="border-2 border-black px-8 py-3 rounded-xl font-black text-[11px] uppercase">Details</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-white py-24 px-8 border-t border-stone-100 text-center">
+            <p class="text-[9px] font-black text-stone-300 tracking-[0.3em] uppercase mb-1">© 2026 DAZEEN • PUNE</p>
+            <p class="text-[9px] font-bold text-stone-400 tracking-[0.2em] uppercase">By Shivhind – ESTD 2026</p>
+        </footer>
+    </main>
+
+    <!-- Detailed Product Overlay -->
+    <div id="detail-page" class="full-page-overlay no-scrollbar">
+        <div class="flex-none bg-white/95 backdrop-blur-md p-5 flex justify-between items-center border-b">
+            <button onclick="closeDetailPage()" class="p-2 bg-stone-50 rounded-full"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <div class="header-logo text-lg">DAZEEN</div>
+            <button onclick="closeDetailPage(); openCart()" class="p-2"><i data-lucide="shopping-bag" class="w-6 h-6"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-10 flex justify-center bg-white"><img src="Coffe3.PNG" class="w-4/5 max-w-sm"></div>
+
+            <div class="p-8 max-w-2xl mx-auto pb-32">
+                <p class="text-[10px] font-black text-brand-brown uppercase mb-2 tracking-[4px]">PUNE ROASTERY CRAFT</p>
+                <h1 class="text-3xl font-black text-stone-900 mb-2 uppercase leading-none">Dazeen – Dates Seed Coffee</h1>
+                <div class="flex items-baseline gap-3 mb-10"><span class="text-4xl font-black">₹799</span><span class="text-stone-300 line-through text-xl">₹999</span><span class="text-green-700 font-bold text-lg">20% OFF</span></div>
+
+                <!-- Pin Checker -->
+                <div class="bg-stone-50 border rounded-2xl p-6 mb-10">
+                    <p class="text-[10px] font-black text-stone-400 uppercase mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-brand-brown"></i> Check Delivery</p>
+                    <div class="flex gap-3">
+                        <input type="number" id="check-pin" placeholder="Enter Pincode" class="fk-input mb-0 flex-1 bg-white">
+                        <button onclick="checkPin()" id="pin-btn" class="bg-stone-900 text-white px-6 rounded-lg font-black text-xs uppercase">Check</button>
+                    </div>
+                    <p id="pin-status" class="mt-3 text-[11px] font-bold text-green-700 italic hidden">✓ Free Delivery Available</p>
+                </div>
+
+                <div class="mb-12">
+                    <p class="text-xs font-black text-stone-400 uppercase mb-4">Select Quantity</p>
+                    <div class="flex items-center gap-8">
+                        <div class="flex items-center gap-6 bg-stone-50 p-2 rounded-xl border">
+                            <button onclick="updateQty(-1)" class="w-10 h-10 font-black text-xl">-</button>
+                            <span id="qty-val" class="font-black text-2xl">1</span>
+                            <button onclick="updateQty(1)" class="w-10 h-10 font-black text-xl">+</button>
+                        </div>
+                        <button onclick="addToCart()" class="btn-brand flex-1 py-5 shadow-xl">Add to Basket</button>
+                    </div>
+                </div>
+
+                <div class="border-t pt-10 mb-10">
+                    <h3 class="text-[11px] font-black uppercase text-stone-400 mb-6 tracking-[0.2em]">Product Details</h3>
+                    <div class="space-y-6 text-sm text-stone-600 leading-relaxed">
+                        <p class="font-medium text-stone-800">Experience a new way of coffee with Dazeen, a premium caffeine-free brew made from finely roasted date seeds.</p>
+                        <p>Crafted for the modern generation, Dazeen delivers a rich aroma, smooth texture, and a satisfying coffee-like taste — without caffeine.</p>
+                        <div class="py-4">
+                            <p class="font-black text-stone-900 uppercase text-xs mb-3 tracking-widest">Why Dazeen?</p>
+                            <ul class="space-y-2 list-none">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-brown"></i> 100% Natural & Caffeine-Free</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-brown"></i> Smooth, Rich Coffee-Like Taste</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-brown"></i> No Chemicals or Preservatives</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-brown"></i> Light on the Stomach</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brand-brown"></i> Perfect for Daily Use</li>
+                            </ul>
+                        </div>
+                        <p>Enjoy it hot or cold — black, with milk, or as a refreshing cold coffee.</p>
+                        <div class="pt-6">
+                            <p class="font-black text-stone-900 text-sm italic uppercase tracking-tighter">Make the smarter switch. Choose clean energy. Choose Dazeen.</p>
+                            <p class="text-[10px] font-bold text-stone-400 uppercase mt-2 tracking-widest">By Shivhind – ESTD 2026</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basket Strip -->
+    <div id="home-basket-strip" onclick="openCart()">
+        <div class="flex flex-col"><span id="strip-qty" class="text-[9px] font-black text-stone-400 uppercase">1 ITEM ADDED</span><span id="strip-total" class="font-black text-xl">₹799</span></div>
+        <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-widest">View Basket <i data-lucide="arrow-right" class="w-4 h-4"></i></div>
+    </div>
+
+    <!-- Basket Overlay -->
+    <div id="cart-sheet" class="full-page-overlay" style="background: var(--fk-bg);">
+        <div class="flex-none bg-white p-5 flex items-center gap-5 border-b">
+            <button onclick="closeAll()" class="p-2"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-lg font-bold">My Basket</h2>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto">
+            <div id="cart-items" class="bg-white"></div>
+            <div class="bg-white p-6 mt-2 mb-2 pb-10">
+                <h3 class="text-xs font-black text-stone-400 uppercase mb-5">Select Payment Method</h3>
+                <div onclick="setMethod('cod')" id="m-cod" class="method-card selected"><div class="text-left"><p class="font-bold text-sm">COD (Cash on Delivery)</p></div><i data-lucide="check-circle" class="w-5 h-5 ml-auto text-brand-brown m-check"></i></div>
+                
+                <div id="m-upi" class="method-card disabled">
+                    <div class="maintenance-badge">Maintenance</div>
+                    <div class="text-left"><p class="font-bold text-sm">UPI Payment</p></div>
+                    <i data-lucide="circle" class="w-5 h-5 ml-auto text-stone-200"></i>
+                </div>
+                <p class="text-[9px] text-stone-400 font-bold uppercase mt-2 italic">Note: UPI option temporary unavailable due to maintenance.</p>
+            </div>
+        </div>
+
+        <div class="flex-none bg-white p-5 flex items-center justify-between border-t shadow-xl">
+            <div class="flex flex-col"><span id="cart-total-footer" class="text-2xl font-black">₹799</span></div>
+            <button onclick="goToAddress()" class="btn-brand px-12">Place Order</button>
+        </div>
+    </div>
+
+    <!-- Redesigned Address Page -->
+    <div id="address-overlay" class="full-page-overlay" style="background: var(--fk-bg);">
+        <div class="flex-none bg-white p-5 flex items-center gap-5 border-b">
+            <button onclick="closeAddress()"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-lg font-bold">Add Delivery Address</h2>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 max-w-xl mx-auto">
+            <!-- Contact Card -->
+            <div class="fk-address-card mb-4">
+                <h4 class="text-xs font-black text-blue-600 uppercase mb-6 tracking-widest">Contact Details</h4>
+                <label class="fk-label">Full Name</label>
+                <input type="text" id="cust-name" placeholder="Receiver's Full Name" class="fk-input">
+                
+                <label class="fk-label">Mobile Number</label>
+                <input type="tel" id="cust-phone" placeholder="10-digit Mobile Number" class="fk-input" maxlength="10">
+            </div>
+
+            <!-- Address Card -->
+            <div class="fk-address-card">
+                <h4 class="text-xs font-black text-blue-600 uppercase mb-6 tracking-widest">Delivery Address</h4>
+                
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="fk-label">Pincode</label>
+                        <input type="number" id="cust-pin" placeholder="6-digit Pincode" class="fk-input">
+                    </div>
+                    <div class="flex-1">
+                        <label class="fk-label">State</label>
+                        <input type="text" id="cust-state" placeholder="e.g. Maharashtra" class="fk-input">
+                    </div>
+                </div>
+
+                <label class="fk-label">City / Town</label>
+                <input type="text" id="cust-city" placeholder="Enter City Name" class="fk-input">
+
+                <label class="fk-label">House No / Building Name / Area</label>
+                <textarea id="cust-addr" placeholder="Detailed address for accurate delivery" rows="3" class="fk-input" style="height: auto;"></textarea>
+
+                <label class="fk-label">Landmark (Optional)</label>
+                <input type="text" id="cust-landmark" placeholder="e.g. Near Shivhind Temple" class="fk-input">
+            </div>
+            
+            <p class="text-[10px] text-stone-400 font-bold uppercase text-center mt-6 mb-10">Review your address before confirming.</p>
+        </div>
+
+        <div class="flex-none bg-white p-5 border-t">
+            <button onclick="handleOrder()" id="order-btn" class="btn-brand py-5 text-sm uppercase shadow-2xl">Confirm Order (COD)</button>
+        </div>
+    </div>
+
+    <!-- Final Success Screen -->
+    <div id="success-view" class="full-page-overlay no-scrollbar flex items-center justify-center">
+        <div class="text-center p-8 max-w-sm w-full">
+            <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-10 shadow-[0_0_40px_rgba(46,125,50,0.1)]">
+                <i data-lucide="check-circle" class="w-12 h-12 text-green-600"></i>
+            </div>
+            <h2 class="text-3xl font-black uppercase mb-2 leading-none">Ordered!</h2>
+            <p class="text-xs text-stone-400 font-bold uppercase tracking-[2px] mb-8">Seed Ritual Confirmed</p>
+            
+            <div class="space-y-3">
+                <div class="success-pill">
+                    <span>Order Reference</span>
+                    <p id="ref-id">#DZ-000000</p>
+                </div>
+                <div class="success-pill">
+                    <span>Order Date & Time</span>
+                    <p id="order-dt">Loading...</p>
+                </div>
+                <div class="success-pill" style="border: 2px solid #e8f5e9; background: #fff;">
+                    <span style="color: #2e7d32;">Estimated Arrival</span>
+                    <p id="est-arr" class="text-green-700">Checking...</p>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="btn-brand mt-12 bg-black shadow-2xl">Ritual Done</button>
+            <p class="mt-6 text-[9px] font-black text-stone-300 uppercase tracking-widest">A Daund Roastery Experience</p>
+        </div>
+    </div>
+
+    <audio id="roar-sound" src="Roar.mp3" preload="auto"></audio>
+
+    <script>
+        const PRODUCT = { title: "DAZEEN – Dates Seed Coffee", price: 799 };
+        let cartQty = 0, activeQty = 1, method = 'cod';
+
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+
+        function showNotif(msg) {
+            const n = document.getElementById('ios-notification');
+            document.getElementById('notif-text').innerText = msg;
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 4000);
+        }
+
+        function scrollToProduct() { document.getElementById('product-view').scrollIntoView({ behavior: 'smooth' }); }
+        function openDetailPage() { document.getElementById('detail-page').classList.add('active'); activeQty = 1; updateQtyUI(); }
+        function closeDetailPage() { document.getElementById('detail-page').classList.remove('active'); }
+        function openCart() { renderCart(); document.getElementById('cart-sheet').classList.add('active'); }
+        function closeAll() { document.getElementById('cart-sheet').classList.remove('active'); }
+        function closeAddress() { document.getElementById('address-overlay').classList.remove('active'); }
+
+        function updateQty(d) { activeQty = Math.max(1, activeQty + d); updateQtyUI(); }
+        function updateQtyUI() { document.getElementById('qty-val').innerText = activeQty; }
+
+        function addToCart() {
+            cartQty = activeQty;
+            closeDetailPage();
+            updateStrip();
+            showNotif("Seed ritual added to basket!");
+        }
+
+        function updateStrip() {
+            const strip = document.getElementById('home-basket-strip');
+            if(cartQty > 0) {
+                strip.style.display = 'flex';
+                document.getElementById('strip-qty').innerText = `${cartQty} ITEM ADDED`;
+                document.getElementById('strip-total').innerText = `₹${cartQty * PRODUCT.price}`;
+                const count = document.getElementById('header-cart-count');
+                count.innerText = cartQty;
+                count.classList.remove('hidden');
+            } else {
+                strip.style.display = 'none';
+                document.getElementById('header-cart-count').classList.add('hidden');
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            if(cartQty === 0) { container.innerHTML = `<div class="p-20 text-center text-stone-300 font-bold uppercase">Basket Empty</div>`; return; }
+            container.innerHTML = `
+                <div class="fk-item-card">
+                    <img src="Coffe3.PNG" class="w-20 h-20 object-contain bg-stone-50 rounded-xl">
+                    <div class="flex-1 text-left">
+                        <p class="font-bold text-sm">DAZEEN Date Seed Roast</p>
+                        <p class="font-black text-xl">₹${PRODUCT.price}</p>
+                        <div class="flex items-center gap-4 mt-3">
+                            <button onclick="modifyCart(-1)" class="w-8 h-8 border rounded font-bold">-</button>
+                            <span class="font-bold">${cartQty}</span>
+                            <button onclick="modifyCart(1)" class="w-8 h-8 border rounded font-bold">+</button>
+                        </div>
+                    </div>
+                </div>`;
+            document.getElementById('cart-total-footer').innerText = `₹${cartQty * PRODUCT.price}`;
+        }
+
+        function modifyCart(d) { cartQty = Math.max(0, cartQty + d); renderCart(); updateStrip(); }
+
+        function setMethod(m) {
+            if(m === 'upi') { showNotif("UPI Section under maintenance."); return; }
+            method = m;
+            document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.m-check').forEach(i => i.classList.add('text-transparent'));
+            const card = document.getElementById(`m-${m}`);
+            card.classList.add('selected');
+            card.querySelector('.m-check').classList.remove('text-transparent');
+            card.querySelector('.m-check').classList.add('text-brand-brown');
+        }
+
+        function goToAddress() {
+            if(cartQty === 0) return;
+            document.getElementById('address-overlay').classList.add('active');
+        }
+
+        function handleOrder() {
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const city = document.getElementById('cust-city').value;
+            const addr = document.getElementById('cust-addr').value;
+
+            if(!name || phone.length !== 10 || !addr || !city) { 
+                showNotif("Saari details (Name, 10-digit Phone, City, Address) bharna zaruri hai."); 
+                return; 
+            }
+            finalize();
+        }
+
+        function finalize() {
+            const orderID = Math.floor(100000 + Math.random() * 900000);
+            const now = new Date();
+            const dtOptions = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            const dateStr = now.toLocaleString('en-IN', dtOptions);
+            const est = new Date(); est.setDate(now.getDate() + 7);
+            const estStr = est.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            const formData = new FormData();
+            formData.append('Order_ID', `#DZ-${orderID}`);
+            formData.append('Customer', document.getElementById('cust-name').value);
+            formData.append('Mobile', document.getElementById('cust-phone').value);
+            formData.append('Pincode', document.getElementById('cust-pin').value);
+            formData.append('City', document.getElementById('cust-city').value);
+            formData.append('State', document.getElementById('cust-state').value);
+            formData.append('Address', document.getElementById('cust-addr').value);
+            formData.append('Landmark', document.getElementById('cust-landmark').value);
+            formData.append('Total', `₹${cartQty * PRODUCT.price}`);
+            formData.append('Payment', "COD");
+
+            fetch('https://formspree.io/f/xykldvol', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            }).then(response => {
+                if (response.ok) {
+                    document.getElementById('ref-id').innerText = `#DZ-${orderID}`;
+                    document.getElementById('order-dt').innerText = dateStr;
+                    document.getElementById('est-arr').innerText = `By ${estStr} (Expected)`;
+                    document.getElementById('success-view').classList.add('active');
+                    lucide.createIcons();
+                    const sound = document.getElementById('roar-sound');
+                    if(sound) sound.play().catch(()=>{});
+                } else {
+                    showNotif("Server error: Please try again.");
+                }
+            }).catch(() => showNotif("Network connection check karein."));
+        }
+
+        function checkPin() {
+            const pin = document.getElementById('check-pin').value;
+            if(pin.length < 6) return;
+            document.getElementById('pin-btn').innerText = "...";
+            setTimeout(() => { 
+                document.getElementById('pin-btn').innerText = "Check"; 
+                document.getElementById('pin-status').classList.remove('hidden'); 
+                showNotif("Express Delivery available!"); 
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+
+
