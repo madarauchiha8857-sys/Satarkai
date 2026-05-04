@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAZEEN | The Premium Date Seed Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- GSAP for Spring Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-base: #FDFBF7; 
+            --brand-brown: #6f4e37;
+            --brand-brown-dark: #4a3425;
+            --brand-cream: #f4ece1;
+            --fluid-bezier: cubic-bezier(0.4, 0, 0, 1);
+            --success-green: #2e7d32;
+            --dazeen-red: #ff3b30;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: #1a1a1a;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 0; height: 0; }
+
+        /* --- Dynamic Island (Liquid Glass Design) --- */
+        .dynamic-island-container {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            width: auto;
+            pointer-events: none;
+            transition: opacity 0.5s var(--fluid-bezier), transform 0.5s var(--fluid-bezier);
+        }
+
+        .dynamic-island {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(35px) saturate(180%);
+            -webkit-backdrop-filter: blur(35px) saturate(180%);
+            color: #fff;
+            border-radius: 999px;
+            padding: 8px 20px;
+            min-width: 120px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.5s var(--fluid-bezier);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 0 0 0.5px rgba(255,255,255,0.1);
+            position: relative;
+            will-change: width, height, border-radius;
+        }
+
+        .dynamic-island.expanded-menu { height: 75px; min-width: 320px; border-radius: 40px; }
+        .dynamic-island.expanded-music { height: 195px; min-width: 345px; border-radius: 50px; padding: 25px; flex-direction: column; }
+        .dynamic-island.expanded-notif { height: 50px; min-width: 300px; border-radius: 25px; background: rgba(30, 30, 32, 0.95); }
+        .dynamic-island.expanded-otp { height: 130px; min-width: 320px; border-radius: 42px; flex-direction: column; padding: 22px; cursor: default; }
+        .dynamic-island.confirmed { height: 55px; min-width: 240px; border-radius: 28px; background: #000; border: 1px solid rgba(34,197,94,0.4); }
+
+        .island-content-compact {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+
+        .dynamic-island:not(.compact) .island-content-compact { opacity: 0; display: none; }
+
+        .island-view { display: none; width: 100%; opacity: 0; transform: scale(0.9); transition: all 0.4s var(--fluid-bezier) 0.1s; }
+        
+        .expanded-menu .island-content-expanded,
+        .expanded-music .island-music-player,
+        .expanded-notif .island-notification,
+        .expanded-otp .island-otp-view,
+        .confirmed .island-confirmed-view { 
+            display: flex; opacity: 1; transform: scale(1); 
+        }
+
+        .island-content-expanded { justify-content: space-between; align-items: center; gap: 20px; }
+        .island-music-player { flex-direction: column; position: relative; }
+        .island-notification { align-items: center; justify-content: center; gap: 12px; }
+        .island-otp-view { flex-direction: column; align-items: center; gap: 12px; }
+        .island-confirmed-view { align-items: center; justify-content: center; gap: 12px; }
+
+        .island-item { display: flex; flex-direction: column; align-items: center; color: #fff; text-decoration: none; transition: transform 0.2s; }
+        .island-item:active { transform: scale(0.9); }
+        .island-item span { font-size: 8px; font-weight: 900; text-transform: uppercase; margin-top: 4px; letter-spacing: 1.5px; opacity: 0.5; }
+
+        .island-otp-input { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.1); color: #fff; text-align: center; font-weight: 900; font-size: 22px; letter-spacing: 6px; width: 100%; padding: 10px; border-radius: 15px; outline: none; }
+        .island-otp-btn { background: #fff; color: #000; width: 100%; padding: 12px; border-radius: 15px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; }
+
+        .music-top { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
+        .music-art { width: 48px; height: 48px; background: linear-gradient(135deg, #ff3b30, #6f4e37); border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; }
+        .music-info h4 { font-size: 14px; font-weight: 800; }
+        .music-info p { font-size: 11px; opacity: 0.5; }
+        .music-controls { display: flex; align-items: center; justify-content: center; gap: 45px; margin-top: 5px; }
+        .music-progress { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 15px 0; }
+        .music-bar { height: 100%; background: #fff; border-radius: 2px; width: 40%; }
+        .close-music-btn { position: absolute; top: -10px; right: -10px; padding: 15px; opacity: 0.5; cursor: pointer; }
+
+        /* --- Hero --- */
+        .hero { position: sticky; top: 0; height: 100vh; background: var(--brand-cream); display: flex; align-items: center; justify-content: center; z-index: 1; overflow: hidden; }
+        .hero-video-wrap { position: absolute; inset: 0; z-index: -1; }
+        .hero-video-wrap video { width: 100%; height: 100%; object-fit: cover; opacity: 0.2; mix-blend-mode: multiply; }
+        .hero-content { text-align: center; }
+        .hero-content h1 { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(4rem, 18vw, 10rem); margin-bottom: 10px; color: #000; line-height: 0.85; text-transform: uppercase; letter-spacing: -0.05em; }
+        .hero-content p { font-weight: 900; text-transform: uppercase; letter-spacing: 0.5em; font-size: 10px; color: var(--brand-brown); opacity: 0.8; }
+
+        .main-content { position: relative; background: white; min-height: 100vh; z-index: 2; padding: 80px 24px; border-radius: 48px 48px 0 0; box-shadow: 0 -30px 60px rgba(0,0,0,0.06); }
+        .full-page-overlay { position: fixed; inset: 0; background: white; z-index: 6000; transform: translate3d(0, 100%, 0); transition: transform 0.6s var(--fluid-bezier); visibility: hidden; display: flex; flex-direction: column; }
+        .full-page-overlay.active { transform: translate3d(0, 0, 0); visibility: visible; }
+        .btn-brand-pill { background-color: var(--brand-brown); color: #fff; padding: 18px 32px; border-radius: 999px; font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 1.5px; box-shadow: 0 10px 25px rgba(111, 78, 55, 0.25); border: none; width: 100%; transition: transform 0.3s, background 0.3s; }
+
+        #home-basket-strip { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 16px 24px; display: none; align-items: center; justify-content: space-between; z-index: 4500; border-radius: 30px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+        .reveal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--dazeen-red); z-index: 12000; transform: translateY(100%); }
+        #global-loader { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 20000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--brand-brown); border-radius: 50%; animation: spin 1s linear infinite; }
+        .fk-input { width: 100%; padding: 16px; border: 1.5px solid #eee; border-radius: 16px; font-size: 14px; margin-bottom: 15px; background: #fafafa; outline: none; transition: border-color 0.3s; }
+        .fk-input:focus { border-color: var(--brand-brown); background: #fff; }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <div class="reveal-overlay" id="transition-curtain"></div>
+
+    <!-- Dynamic Island Container -->
+    <div class="dynamic-island-container" id="island-container">
+        <div class="dynamic-island" id="island" onclick="handleIslandClick(event)">
+            <div class="island-content-compact">DAZEEN</div>
+            
+            <div class="island-view island-content-expanded" onclick="event.stopPropagation()">
+                <div class="island-item cursor-pointer" onclick="switchToMusic()">
+                    <i data-lucide="music" class="w-5 h-5 text-red-500"></i>
+                    <span>Music</span>
+                </div>
+                <a href="mailto:support@dazeen.in" class="island-item">
+                    <i data-lucide="mail" class="w-5 h-5 text-blue-400"></i>
+                    <span>Support</span>
+                </a>
+                <div class="island-item cursor-pointer" onclick="openTerms()">
+                    <i data-lucide="file-text" class="w-5 h-5 text-stone-400"></i>
+                    <span>Terms</span>
+                </div>
+            </div>
+
+            <div class="island-view island-music-player" onclick="event.stopPropagation()">
+                <div onclick="switchToCompact()" class="close-music-btn"><i data-lucide="x" class="w-4 h-4"></i></div>
+                <div class="music-top">
+                    <div class="music-art">DAZ</div>
+                    <div class="music-info">
+                        <h4>Dazeen Experience</h4>
+                        <p>Shivhind • 2026</p>
+                    </div>
+                    <div class="flex gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4 text-green-500 animate-pulse"></i></div>
+                </div>
+                <div class="music-progress"><div class="music-bar"></div></div>
+                <div class="music-controls">
+                    <i data-lucide="rewind" class="w-5 h-5 opacity-40"></i>
+                    <div onclick="playSong()" class="cursor-pointer"><i id="play-icon" data-lucide="play" class="w-7 h-7 fill-white"></i></div>
+                    <i data-lucide="fast-forward" class="w-5 h-5 opacity-40"></i>
+                </div>
+            </div>
+
+            <div class="island-view island-notification" onclick="event.stopPropagation()">
+                <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"><i data-lucide="bell" class="w-3 h-3 text-white"></i></div>
+                <p id="island-notif-text" class="text-[11px] font-bold tracking-tight"></p>
+            </div>
+
+            <div class="island-view island-otp-view" onclick="event.stopPropagation()">
+                <input type="number" id="island-otp-input" placeholder="000000" class="island-otp-input">
+                <button onclick="verifyAndOrder()" class="island-otp-btn mt-2">Verify & Confirm</button>
+            </div>
+
+            <div class="island-view island-confirmed-view" onclick="event.stopPropagation()">
+                <i data-lucide="check-circle" class="w-6 h-6 text-green-500"></i>
+                <span class="text-xs font-black uppercase tracking-widest">Confirmed!</span>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bgMusic" src="Music.mp3" loop></audio>
+    <audio id="successSound" src="Roar.mp3" preload="auto"></audio>
+
+    <div id="global-loader">
+        <div class="spinner"></div>
+        <p class="mt-4 text-[10px] font-black tracking-[0.3em] uppercase opacity-40">Roasting Experience...</p>
+    </div>
+
+    <div class="hero">
+      <div class="hero-video-wrap"><video autoplay muted loop playsinline><source src="Background.mp4" type="video/mp4"></video></div>
+      <div class="hero-content"><h1>DAZEEN</h1><p>©2026 The Sacred Seed</p></div>
+    </div>
+
+    <div class="main-content">
+        <!-- Products Grid -->
+        <section id="product-view" class="mb-20 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="bg-white rounded-[40px] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-stone-100 cursor-pointer group" onclick="openDetailPage('100G', 320, 400, 'Coffe3.PNG')">
+                <div class="aspect-square rounded-[32px] flex items-center justify-center mb-10 overflow-hidden bg-stone-50"><img src="Coffe3.PNG" class="w-3/4 object-contain group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="text-left">
+                    <p class="text-[10px] font-black text-stone-400 tracking-[0.4em] mb-3 uppercase">Starter Pack</p>
+                    <h2 class="text-2xl font-black text-stone-900 leading-tight mb-6 uppercase tracking-tighter">Date Seed Roast (100G)</h2>
+                    <div class="flex items-center justify-between"><div class="flex items-baseline gap-2"><span class="text-2xl font-black">₹320</span><span class="text-stone-300 line-through font-bold">₹400</span></div><button class="bg-black text-white px-8 py-3 rounded-full font-black text-[10px] uppercase">Details</button></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[40px] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-stone-100 cursor-pointer group" onclick="openDetailPage('250G', 799, 999, 'Coffe1.JPG')">
+                <div class="aspect-square rounded-[32px] flex items-center justify-center mb-10 overflow-hidden bg-stone-50"><img src="Coffe1.JPG" class="w-3/4 object-contain group-hover:scale-110 transition-transform duration-700"></div>
+                <div class="text-left">
+                    <p class="text-[10px] font-black text-stone-400 tracking-[0.4em] mb-3 uppercase">Best Seller</p>
+                    <h2 class="text-2xl font-black text-stone-900 leading-tight mb-6 uppercase tracking-tighter">Date Seed Roast (250G)</h2>
+                    <div class="flex items-center justify-between"><div class="flex items-baseline gap-2"><span class="text-2xl font-black">₹799</span><span class="text-stone-300 line-through font-bold">₹999</span></div><button class="bg-black text-white px-8 py-3 rounded-full font-black text-[10px] uppercase">Details</button></div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-white pt-10 pb-20 text-center">
+            <div class="max-w-xl mx-auto mb-12"><h4 class="text-3xl font-black uppercase mb-4 tracking-tighter text-stone-900">Crafted in Pune</h4><p class="text-stone-400 text-sm leading-relaxed mb-8 px-6">Small-batch roastery dedicated to the experience of dates. Hand-cleaned, sun-dried, and roasted for the modern soul.</p><div class="flex justify-center gap-6"><a href="https://www.instagram.com/dazeen.in" target="_blank" class="w-14 h-14 bg-stone-50 rounded-full flex items-center justify-center border border-stone-100"><i data-lucide="instagram" class="w-6 h-6 text-stone-800"></i></a></div></div>
+            <p class="text-[10px] font-black text-stone-300 tracking-[0.4em] uppercase mb-2">© 2026 DAZEEN • Shivhind</p>
+        </footer>
+    </div>
+
+    <!-- Product Detail Overlay -->
+    <div id="detail-page" class="full-page-overlay">
+        <div class="flex-none p-6 flex justify-between items-center border-b sticky top-0 bg-white/90 backdrop-blur-xl z-50">
+            <button onclick="closeDetailPage()" class="p-3 bg-stone-100 rounded-full"><i data-lucide="chevron-down" class="w-6 h-6"></i></button>
+            <div class="text-lg font-black uppercase tracking-tight">DAZEEN</div><div class="w-12"></div>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-10 flex justify-center bg-stone-50"><img id="detail-img" src="Coffe3.PNG" class="w-4/5 max-w-sm drop-shadow-2xl"></div>
+            <div class="p-8 max-w-2xl mx-auto">
+                <p class="text-[11px] font-black text-brand-brown uppercase mb-3 tracking-[0.5em]">The Original Roast</p>
+                <h1 id="detail-title" class="text-4xl font-black text-stone-900 mb-2 uppercase leading-[0.9] tracking-tighter">Date Seed Coffee</h1>
+                <div class="flex items-baseline gap-4 mb-8"><span id="detail-price" class="text-4xl font-black">₹799</span><span id="detail-orig" class="text-stone-300 line-through text-2xl font-bold">₹999</span><span class="text-green-700 font-black text-lg">OFFER</span></div>
+
+                <!-- MOVED ABOVE DESCRIPTION & MADE SMALLER -->
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="flex items-center gap-4 bg-stone-100 p-1.5 rounded-full border-2 border-stone-200 px-4">
+                        <button onclick="updateQty(-1)" class="w-6 h-6 font-black text-lg text-stone-400">-</button>
+                        <span id="qty-val" class="font-black text-lg">1</span>
+                        <button onclick="updateQty(1)" class="w-6 h-6 font-black text-lg text-stone-900">+</button>
+                    </div>
+                    <button onclick="addToCart()" class="btn-brand-pill flex-1 py-4 text-xs">Add to Basket</button>
+                </div>
+
+                <!-- FULL DESCRIPTION -->
+                <div class="border-t-2 border-stone-50 pt-10 mb-12">
+                    <h3 class="text-xs font-black uppercase text-stone-400 mb-6 tracking-[0.3em]">The Story</h3>
+                    <div class="space-y-6 text-md text-stone-600 leading-[1.7]">
+                        <p class="font-bold text-stone-900 text-lg">Dazeen – Dates Seed Coffee</p>
+                        <p>Experience a new way of coffee with Dazeen, a premium caffeine-free brew made from finely roasted date seeds.</p>
+                        <p>Crafted for the modern generation, Dazeen delivers a rich aroma, smooth texture, and a satisfying coffee-like taste — without caffeine.</p>
+                        <p>Whether you're a fitness enthusiast, a health-conscious individual, or simply looking to switch to a cleaner lifestyle, Dazeen fits perfectly into your daily routine.</p>
+                        
+                        <div class="bg-stone-50 p-8 rounded-[40px] space-y-4">
+                            <p class="text-xs font-black uppercase tracking-widest text-stone-800 mb-2">Why Dazeen?</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-3"><i data-lucide="check" class="text-brand-brown w-4 h-4"></i> <span class="font-bold text-sm text-stone-800 uppercase">100% Natural & Caffeine-Free</span></li>
+                                <li class="flex items-center gap-3"><i data-lucide="check" class="text-brand-brown w-4 h-4"></i> <span class="font-bold text-sm text-stone-800 uppercase">Smooth, Rich Coffee-Like Taste</span></li>
+                                <li class="flex items-center gap-3"><i data-lucide="check" class="text-brand-brown w-4 h-4"></i> <span class="font-bold text-sm text-stone-800 uppercase">No Chemicals or Preservatives</span></li>
+                                <li class="flex items-center gap-3"><i data-lucide="check" class="text-brand-brown w-4 h-4"></i> <span class="font-bold text-sm text-stone-800 uppercase">Light on the Stomach</span></li>
+                                <li class="flex items-center gap-3"><i data-lucide="check" class="text-brand-brown w-4 h-4"></i> <span class="font-bold text-sm text-stone-800 uppercase">Perfect for Daily Use</span></li>
+                            </ul>
+                        </div>
+
+                        <p>Enjoy it hot or cold — black, with milk, or as a refreshing cold coffee.</p>
+                        <p class="font-black text-stone-900 text-lg">Make the smarter switch. Choose clean energy. Choose Dazeen.</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-center pt-8">By Shivhind – ESTD 2026</p>
+                    </div>
+                </div>
+
+                <div class="bg-stone-50 border-2 border-stone-100 rounded-[30px] p-8 mb-12">
+                    <p class="text-[11px] font-black text-stone-400 uppercase mb-5 flex items-center gap-2"><i data-lucide="truck" class="w-4 h-4 text-brand-brown"></i> Check Availability</p>
+                    <div class="flex gap-3"><input type="number" id="check-pin" placeholder="Pincode" class="fk-input mb-0 flex-1 bg-white border-2"><button onclick="checkPincode()" id="pin-btn" class="bg-black text-white px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest">Check</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basket Strip -->
+    <div id="home-basket-strip">
+        <div class="flex flex-col"><span id="strip-qty" class="text-[10px] font-black text-stone-400 uppercase tracking-widest">1 ITEM</span><span id="strip-total" class="font-black text-xl">₹799</span></div>
+        <button onclick="openCartWithLoader()" class="btn-brand-pill px-10 py-4 text-[10px] w-auto shadow-none">View Basket</button>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div id="cart-sheet" class="full-page-overlay" style="background: #f8f8f8;">
+        <div class="flex-none bg-white p-6 flex items-center gap-6 border-b"><button onclick="closeAll()" class="p-2"><i data-lucide="chevron-left" class="w-7 h-7"></i></button><h2 class="text-xl font-black uppercase tracking-tighter">Your Basket</h2></div>
+        <div class="flex-1 overflow-y-auto"><div id="cart-items-list" class="bg-white"></div><div class="bg-white p-8 mt-4"><h4 class="text-[10px] font-black text-stone-400 uppercase mb-6 tracking-[0.3em]">Experience Breakdown</h4><div class="flex justify-between text-sm font-bold mb-4"><span>Subtotal</span><span id="orig-p-tot">₹999</span></div><div class="flex justify-between text-sm font-bold mb-4"><span class="text-stone-400">Discount</span><span id="disc-p-tot" class="text-green-700">-₹200</span></div><div class="flex justify-between text-sm font-bold mb-6"><span>Shipping</span><span class="text-green-700">FREE</span></div><div class="flex justify-between text-2xl font-black pt-6 border-t-2 border-stone-50"><span>Total</span><span id="final-p-tot">₹799</span></div></div></div>
+        <div class="flex-none bg-white p-6 border-t shadow-2xl flex items-center justify-between"><span id="cart-total-footer" class="text-2xl font-black text-stone-900">₹799</span><button onclick="goToAddress()" class="btn-brand-pill px-12 py-5 text-sm w-auto">Proceed</button></div>
+    </div>
+
+    <!-- Address Overlay -->
+    <div id="address-overlay" class="full-page-overlay" style="background: #f8f8f8;">
+        <div class="flex-none bg-white p-6 flex items-center gap-6 border-b"><button onclick="closeAddress()"><i data-lucide="chevron-left" class="w-7 h-7"></i></button><h2 class="text-xl font-black uppercase tracking-tighter">Shipping Details</h2></div>
+        <div class="flex-1 overflow-y-auto p-6 max-w-xl mx-auto">
+            <div class="bg-white p-8 rounded-[40px] shadow-sm mb-6 border border-stone-100"><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">Full Name</label><input type="text" id="cust-name" placeholder="Enter Name" class="fk-input"><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">Mobile Number</label><input type="tel" id="cust-phone" placeholder="10-digit Number" class="fk-input" maxlength="10"></div>
+            <div class="bg-white p-8 rounded-[40px] shadow-sm border border-stone-100"><div class="flex gap-4"><div class="flex-1"><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">Pincode</label><input type="number" id="cust-pin" placeholder="Pincode" class="fk-input"></div><div class="flex-1"><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">State</label><input type="text" id="cust-state" placeholder="State" class="fk-input"></div></div><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">City</label><input type="text" id="cust-city" placeholder="City" class="fk-input"><label class="text-[10px] font-black uppercase text-stone-400 block mb-3">Detailed Address</label><textarea id="cust-addr" placeholder="House No, Road details" rows="3" class="fk-input"></textarea></div>
+            <div class="text-center mt-10 mb-20">
+                <p class="text-[10px] font-black uppercase tracking-widest text-stone-400">Secure by DAZEEN</p>
+            </div>
+        </div>
+        <div class="flex-none bg-white p-6 border-t"><button onclick="handleOrder()" class="btn-brand-pill w-full py-6 text-sm">Place Order (COD)</button></div>
+    </div>
+
+    <!-- Final Success View -->
+    <div id="success-view" class="full-page-overlay no-scrollbar flex items-center justify-center bg-white">
+        <div class="text-center p-8 max-w-sm w-full">
+            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-16 shadow-[0_0_40px_rgba(34,197,94,0.15)] border border-green-50"><i data-lucide="check" class="w-10 h-10 text-green-500"></i></div>
+            <h2 class="text-3xl font-bold uppercase mb-12 tracking-tight text-black">Confirmed!</h2>
+            <div class="space-y-3">
+                <div class="bg-[#F9F9F9] p-6 rounded-2xl text-left"><span class="text-[10px] font-bold text-stone-400 block tracking-wider">Order ID</span><p id="ref-id" class="font-bold text-lg text-black">#DZ-000000</p></div>
+                <div class="bg-[#F9F9F9] p-6 rounded-2xl text-left"><span class="text-[10px] font-bold text-stone-400 block tracking-wider">Ordered On</span><p id="order-on-text" class="font-bold text-lg text-black">-- -- --</p></div>
+                <div class="bg-[#F9F9F9] p-6 rounded-2xl text-left"><span class="text-[10px] font-bold text-stone-400 block tracking-wider">Expected Delivery</span><p id="est-arr-text" class="font-bold text-lg text-black">-- -- --</p></div>
+            </div>
+            <button onclick="location.reload()" class="w-full mt-16 py-6 bg-black text-white rounded-full font-bold uppercase tracking-widest text-xs">Done</button>
+        </div>
+    </div>
+
+    <!-- Terms -->
+    <div id="terms-overlay" class="full-page-overlay">
+        <div class="p-6 flex justify-between items-center border-b sticky top-0 bg-white z-50"><button onclick="closeTerms()" class="p-2"><i data-lucide="x" class="w-6 h-6"></i></button><div class="text-xs font-black uppercase tracking-widest">Dazeen Terms</div><div class="w-8"></div></div>
+        <div class="flex-1 overflow-y-auto p-10 space-y-10 text-stone-600 text-sm leading-relaxed">
+            <div><h4 class="text-stone-900 font-black uppercase mb-3">01. Authenticity</h4><p>Dazeen is a natural date seed coffee. Every batch is hand-roasated under Pune's sky. Slight variations are a mark of its artisanal soul.</p></div>
+            <div><h4 class="text-stone-900 font-black uppercase mb-3">02. Order Security</h4><p>We use an automated OTP verification system for all Cash on Delivery orders to ensure a safe experience for our Dazeen family.</p></div>
+            <div><h4 class="text-stone-900 font-black uppercase mb-3">03. Shipping</h4><p>We offer Express Free Delivery. Most orders reach our customers within 6-7 business days across supported pincodes.</p></div>
+        </div>
+    </div>
+
+    <script>
+        let currentProduct = { variant: "250G", price: 799, orig: 999, img: "Coffe1.JPG" };
+        let cartQty = 0, activeQty = 1, generatedOTP = "";
+        const FAST2SMS_KEY = "14eYp2D6nfUcWLTyxmVtq97JaAzHbi3FjX8sGuvZElRdKoOCrkuyLcNgESHKsbtYhz1DrinmqpxoZTvP";
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            lucide.createIcons(); 
+            // Fix: Automatic collapse on scroll or click outside
+            window.addEventListener('scroll', () => { if(currentIslandState !== "compact" && currentIslandState !== "expanded-notif" && currentIslandState !== "expanded-otp") switchToCompact(); }, { passive: true });
+            document.addEventListener('click', (e) => { const island = document.getElementById('island'); if (!island.contains(e.target) && currentIslandState !== "compact" && currentIslandState !== "expanded-otp" && currentIslandState !== "confirmed") switchToCompact(); });
+        });
+
+        // --- Island Logic ---
+        let currentIslandState = "compact"; 
+        function handleIslandClick(e) { e.stopPropagation(); if(currentIslandState === "compact") switchToMenu(); else if(currentIslandState !== "compact") switchToCompact(); }
+        function setIslandVisibility(visible) { const container = document.getElementById('island-container'); container.style.opacity = visible ? '1' : '0'; container.style.pointerEvents = visible ? 'auto' : 'none'; }
+        function switchToMenu() { setIslandState("expanded-menu"); }
+        function switchToCompact() { setIslandState("compact"); }
+        function switchToMusic() { setIslandState("expanded-music"); if (!isPlaying) playSong(); }
+        function setIslandState(state) { const island = document.getElementById('island'); island.className = "dynamic-island " + (state === "compact" ? "" : state); currentIslandState = state; lucide.createIcons(); }
+
+        function showNotif(msg) {
+            setIslandVisibility(true);
+            const textEl = document.getElementById('island-notif-text');
+            textEl.innerText = msg;
+            setIslandState("expanded-notif");
+            setTimeout(() => { if(currentIslandState === "expanded-notif") switchToCompact(); }, 3500);
+        }
+
+        // --- Order & OTP ---
+        function handleOrder() {
+            const n = document.getElementById('cust-name').value, p = document.getElementById('cust-phone').value;
+            const s = document.getElementById('cust-state').value, c = document.getElementById('cust-city').value, a = document.getElementById('cust-addr').value;
+            if(!n || p.length < 10 || !s || !c || !a) { showNotif("Complete address details."); return; }
+            setIslandVisibility(true); showNotif("Sending OTP...");
+            setTimeout(() => {
+                generatedOTP = Math.floor(100000 + Math.random() * 900000);
+                const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_KEY}&route=dlt&sender_id=DAZEEN&message=214505&variables_values=${generatedOTP}&flash=0&numbers=${p}`;
+                fetch(url).then(r => r.json()).then(data => {
+                    if(data.return) { setIslandState("expanded-otp"); document.getElementById('island-otp-input').focus(); }
+                    else showNotif("SMS Error. Retry.");
+                });
+            }, 1500);
+        }
+
+        function verifyAndOrder() { if (document.getElementById('island-otp-input').value === generatedOTP.toString()) finalizeOrder(); else showNotif("Incorrect OTP"); }
+
+        function finalizeOrder() {
+            const orderID = `#DZ-${Math.floor(100000 + Math.random() * 900000)}`;
+            const totalAmount = `₹${cartQty * currentProduct.price}`;
+            const userPhone = document.getElementById('cust-phone').value;
+            const now = new Date(); const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const orderOnStr = `${now.getDate()} ${months[now.getMonth()]} at ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const estDate = new Date(); estDate.setDate(now.getDate() + 7); const estDateStr = `${estDate.getDate()} ${months[estDate.getMonth()]} ${estDate.getFullYear()}`;
+
+            document.getElementById('global-loader').style.display = 'flex';
+            const formData = new FormData();
+            formData.append('Order_ID', orderID);
+            formData.append('Name', document.getElementById('cust-name').value);
+            formData.append('Phone', userPhone);
+            formData.append('Pincode', document.getElementById('cust-pin').value);
+            formData.append('State', document.getElementById('cust-state').value);
+            formData.append('City', document.getElementById('cust-city').value);
+            formData.append('Address', document.getElementById('cust-addr').value);
+            formData.append('Total_Price', totalAmount);
+            formData.append('Product', currentProduct.variant);
+            formData.append('Quantity', cartQty);
+            formData.append('Time', orderOnStr);
+
+            fetch('https://formspree.io/f/xykldvol', { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
+            .then(res => {
+                document.getElementById('global-loader').style.display = 'none';
+                if(res.ok) {
+                    setIslandState("confirmed");
+                    setTimeout(() => {
+                        document.getElementById('ref-id').innerText = orderID; document.getElementById('order-on-text').innerText = orderOnStr;
+                        document.getElementById('est-arr-text').innerText = estDateStr; document.getElementById('success-view').classList.add('active');
+                        document.getElementById('successSound').play().catch(()=>{}); switchToCompact(); setIslandVisibility(false);
+                    }, 2200);
+                    const smsUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_KEY}&route=dlt&sender_id=DAZEEN&message=214507&variables_values=${encodeURIComponent(orderID+'|'+totalAmount)}&flash=0&numbers=${userPhone}`;
+                    fetch(smsUrl);
+                }
+            });
+        }
+
+        // --- Nav Fixes ---
+        function openDetailPage(variant, price, orig, img) {
+            setIslandVisibility(false); currentProduct = { variant, price, orig, img };
+            document.getElementById('detail-title').innerText = `Date Seed Roast (${variant})`;
+            document.getElementById('detail-price').innerText = `₹${price}`;
+            document.getElementById('detail-orig').innerText = `₹${orig}`;
+            document.getElementById('detail-img').src = img;
+            activeQty = 1; document.getElementById('qty-val').innerText = 1;
+            runRevealTransition(() => { document.getElementById('detail-page').classList.add('active'); });
+        }
+        function closeDetailPage() { document.getElementById('detail-page').classList.remove('active'); setIslandVisibility(true); }
+        function openCartWithLoader() { setIslandVisibility(false); runRevealTransition(() => { renderCart(); document.getElementById('cart-sheet').classList.add('active'); }); }
+        function closeAll() { document.getElementById('cart-sheet').classList.remove('active'); setIslandVisibility(true); }
+        function closeAddress() { document.getElementById('address-overlay').classList.remove('active'); }
+        function goToAddress() { if(cartQty > 0) document.getElementById('address-overlay').classList.add('active'); }
+        function addToCart() { cartQty = activeQty; closeDetailPage(); updateStrip(); showNotif("Added to Basket"); }
+        function updateStrip() { const s = document.getElementById('home-basket-strip'); if(cartQty > 0) { s.style.display = 'flex'; document.getElementById('strip-qty').innerText = cartQty + " ITEM"; document.getElementById('strip-total').innerText = "₹" + (cartQty * currentProduct.price); } else s.style.display = 'none'; }
+        function renderCart() { const container = document.getElementById('cart-items-list'); if(cartQty === 0) { container.innerHTML = `<div class="p-20 text-center opacity-30 font-black uppercase">Empty</div>`; return; } container.innerHTML = `<div class="p-6 flex gap-6 border-b-2"><div class="w-24 h-24 bg-stone-50 rounded-2xl flex items-center justify-center overflow-hidden"><img src="${currentProduct.img}" class="w-4/5"></div><div class="flex-1"><p class="font-black text-sm uppercase">DAZEEN Coffee</p><p class="text-[10px] font-bold text-stone-300 uppercase">${currentProduct.variant}</p><p class="font-black text-xl">₹${currentProduct.price}</p><div class="flex items-center gap-6 mt-4"><div class="flex items-center gap-5 border-2 rounded-full px-4 py-1"><button onclick="modifyCart(-1)" class="font-black text-stone-300">-</button><span class="font-black text-sm">${cartQty}</span><button onclick="modifyCart(1)" class="font-black text-stone-900">+</button></div></div></div></div>`; document.getElementById('orig-p-tot').innerText = "₹"+(cartQty*currentProduct.orig); document.getElementById('disc-p-tot').innerText = "-₹"+(cartQty*(currentProduct.orig-currentProduct.price)); document.getElementById('final-p-tot').innerText = "₹"+(cartQty*currentProduct.price); document.getElementById('cart-total-footer').innerText = "₹"+(cartQty*currentProduct.price); }
+        function modifyCart(d) { cartQty = Math.max(0, cartQty + d); renderCart(); updateStrip(); if(cartQty === 0) closeAll(); }
+        function openTerms() { switchToCompact(); setIslandVisibility(false); document.getElementById('terms-overlay').classList.add('active'); }
+        function closeTerms() { document.getElementById('terms-overlay').classList.remove('active'); setIslandVisibility(true); }
+        function checkPincode() { const btn = document.getElementById('pin-btn'); btn.innerText = "..."; setTimeout(() => { btn.innerText = "Check"; showNotif("Delivery Available!"); }, 800); }
+        function runRevealTransition(callback) { const curtain = document.getElementById('transition-curtain'); gsap.to(curtain, { translateY: "0%", duration: 0.6, ease: "power2.inOut", onComplete: () => { callback(); gsap.to(curtain, { translateY: "-100%", duration: 0.6, delay: 0.2, ease: "power2.inOut", onComplete: () => { gsap.set(curtain, { translateY: "100%" }); }}); }}); }
+        function updateQty(d) { activeQty = Math.max(1, activeQty + d); document.getElementById('qty-val').innerText = activeQty; }
+        
+        let isPlaying = false; const song = document.getElementById("bgMusic");
+        function playSong() {
+            const icon = document.getElementById('play-icon');
+            if (!isPlaying) { song.play(); isPlaying = true; if(icon) icon.setAttribute('data-lucide', 'pause'); }
+            else { song.pause(); isPlaying = false; if(icon) icon.setAttribute('data-lucide', 'play'); }
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
+
+
